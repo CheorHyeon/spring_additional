@@ -1,0 +1,30 @@
+spring:
+  thymeleaf:
+    cache: false #개발, 테스트 모드에서는 끕니다.
+  autoconfigure:
+  profiles:
+    active: dev
+    include: secret
+
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://127.0.0.1:3306/townforest__dev?useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=Asia/Seoul
+    username: root
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+      jdbc:
+        batch_size=50  # 한번에 DB업로드 할 수 있는 최대 개수 지정
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+
+logging:
+  level:
+    root: INFO
+    com.ll.spring_additional: DEBUG  #패키지명
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.hibernate.orm.jdbc.extract: TRACE
