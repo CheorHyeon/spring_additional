@@ -7,6 +7,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
+
 import com.ll.spring_additional.answer.Answer;
 import com.ll.spring_additional.user.SiteUser;
 
@@ -41,6 +44,8 @@ public class Question {
 	private LocalDateTime modifyDate;
 
 	@OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE)
+	@LazyCollection(LazyCollectionOption.EXTRA) // answerList.size(); 함수가 실행될 때 SELECT COUNT 실행
+	// N+1 문제는 발생하지만, 한 페이지에 보여주는 10개의 게시물의 정보를 가져와서 개수를 표기하는 것 보다는 덜 부담
 	private List<Answer> answerList = new ArrayList<>();
 
 	@ManyToOne
