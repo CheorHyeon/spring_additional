@@ -1,14 +1,10 @@
 package com.ll.spring_additional;
 
-import java.time.LocalDateTime;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.ll.spring_additional.question.Question;
-import com.ll.spring_additional.question.QuestionRepository;
-import com.ll.spring_additional.question.QuestionService;
+import com.ll.spring_additional.boundedContext.question.service.QuestionService;
 
 @SpringBootTest
 class SpringAdditionalApplicationTests {
