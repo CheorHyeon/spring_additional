@@ -27,10 +27,14 @@
                    sec:authorize="isAuthenticated()"
                    th:if="${question.author != null and #authentication.getPrincipal().getUsername() == question.author.username}"
                    th:text="수정"></a>
-                <a onclick="return confirm('정말로 삭제하시겠습니까?');" th:href="@{|/question/delete/${question.id}|}" class="btn btn-sm btn-outline-secondary"
-                   sec:authorize="isAuthenticated()"
-                   th:if="${question.author != null and #authentication.getPrincipal().getUsername() == question.author.username}"
-                   th:text="삭제"></a>
+                <form th:action="@{|/question/${question.id}|}" method="POST" style="display: inline">
+                    <input type="hidden" name="_method" value="delete">
+                    <button class="btn btn-sm btn-outline-secondary"
+                            th:if="${question.author != null and #authentication.getPrincipal().getUsername() == question.author.username}"
+                            th:text="삭제" sec:authorize="isAuthenticated()"
+                            onclick="return confirm('이 글을 삭제하시겠습니까?');">
+                    </button>
+                </form>
             </div>
         </div>
     </div>

@@ -1,7 +1,10 @@
 spring:
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
   thymeleaf:
     cache: false #개발, 테스트 모드에서는 끕니다.
-  autoconfigure:
   profiles:
     active: dev
     include: secret
