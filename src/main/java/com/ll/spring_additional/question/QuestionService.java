@@ -25,11 +25,11 @@ public class QuestionService {
 		List<Sort.Order> sorts = new ArrayList<>();
 		sorts.add(Sort.Order.desc("createDate"));
 		Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts)); //페이지 번호, 개수
-		return this.questionRepository.findAllByKeyword(kw, pageable);
+		return questionRepository.findAllByKeyword(kw, pageable);
 	}
 
 	public Question getQuestion(Integer id) {
-		Optional<Question> question = this.questionRepository.findById(id);
+		Optional<Question> question = questionRepository.findById(id);
 		if (question.isPresent()) {
 			return question.get();
 		} else {
@@ -41,7 +41,6 @@ public class QuestionService {
 		Question q = new Question();
 		q.setSubject(subject);
 		q.setContent(content);
-		q.setCreateDate(LocalDateTime.now());
 		q.setAuthor(user);
 		questionRepository.save(q);
 	}
@@ -49,7 +48,6 @@ public class QuestionService {
 	public void modify(Question question, String subject, String content) {
 		question.setSubject(subject);
 		question.setContent(content);
-		question.setModifyDate(LocalDateTime.now());
 		questionRepository.save(question);
 	}
 
