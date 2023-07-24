@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ll.spring_additional.DataNotFoundException;
 
@@ -12,12 +13,14 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service
+@Transactional(readOnly = true)
 public class UserService {
 
 	private final UserRepository userRepository;
 
 	private final PasswordEncoder passwordEncoder;
 
+	@Transactional
 	public SiteUser create(String username, String email, String password) {
 		SiteUser user = new SiteUser();
 		user.setUsername(username);

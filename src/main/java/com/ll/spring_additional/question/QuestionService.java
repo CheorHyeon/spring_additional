@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.ll.spring_additional.DataNotFoundException;
 import com.ll.spring_additional.user.SiteUser;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class QuestionService {
 	private final QuestionRepository questionRepository;
 
@@ -37,6 +39,7 @@ public class QuestionService {
 		}
 	}
 
+	@Transactional
 	public void create(String subject, String content, SiteUser user) {
 		Question q = new Question();
 		q.setSubject(subject);
@@ -45,16 +48,19 @@ public class QuestionService {
 		questionRepository.save(q);
 	}
 
+	@Transactional
 	public void modify(Question question, String subject, String content) {
 		question.setSubject(subject);
 		question.setContent(content);
 		questionRepository.save(question);
 	}
 
+	@Transactional
 	public void delete(Question question) {
 		questionRepository.delete(question);
 	}
 
+	@Transactional
 	public void vote(Question question, SiteUser siteUser) {
 		question.getVoters().add(siteUser);
 		questionRepository.save(question);
