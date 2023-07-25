@@ -1,19 +1,22 @@
 spring:
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
   thymeleaf:
     cache: false #개발, 테스트 모드에서는 끕니다.
-  autoconfigure:
   profiles:
     active: dev
     include: secret
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://127.0.0.1:3306/townforest__dev?useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=Asia/Seoul
+    url: jdbc:mariadb://127.0.0.1:3306/sbb__dev?useUnicode=true&characterEncoding=utf8&autoReconnect=true&serverTimezone=Asia/Seoul
     username: root
     password:
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
       jdbc:
         batch_size=50  # 한번에 DB업로드 할 수 있는 최대 개수 지정
     properties:
