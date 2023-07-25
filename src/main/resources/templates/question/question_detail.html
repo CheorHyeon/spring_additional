@@ -19,7 +19,7 @@
             </div>
             <div class="my-3">
                 <a onclick="return confirm('추천하시겠습니까?');" class="btn btn-sm btn-outline-secondary"
-                   th:href="@{|/answer/vote/${question.id}|}">
+                   th:href="@{|/question/vote/${question.id}|}">
                     추천
                     <span class="badge rounded-pill bg-success" th:text="${#sets.size(question.voters)}"></span>
                 </a>
