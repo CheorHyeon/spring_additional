@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.ll.spring_additional.boundedContext.answer.form.AnswerForm;
@@ -41,11 +42,23 @@ public class QuestionController {
 		return "question/question_list";
 	}
 
-	@GetMapping("/detail/{id}")
-	public String detail(Model model, @PathVariable("id") Integer id, AnswerForm answerForm) {
-		Question question = questionService.getQuestion(id);
-		questionService.updateQuestionView(question);
+	@GetMapping("/detail")
+	@ResponseBody
+	public String viewCheck(Model model, @RequestParam Integer questionId, @RequestParam Boolean isVisited, AnswerForm answerForm) {
+		Question question = questionService.getQuestion(questionId);
 
+		// 방문한 적이 없을때만 조회수 증가
+		if(!isVisited) {
+			questionService.updateQuestionView(question);
+		}
+
+		// Ajax에 리다이렉트 url 알려주기
+		return "/question/detail/%d".formatted(questionId);
+	}
+
+	@GetMapping("/detail/{id}")
+	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm) {
+		Question question = questionService.getQuestion(id);
 		model.addAttribute("question", question);
 		return "question/question_detail";
 	}
