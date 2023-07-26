@@ -25,6 +25,7 @@ import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 import com.ll.spring_additional.boundedContext.user.service.UserService;
 import com.ll.spring_additional.standard.util.Ut;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -43,18 +44,18 @@ public class QuestionController {
 		return "question/question_list";
 	}
 	@GetMapping("/detail/{id}")
-	public String detail(Model model, @PathVariable Integer id, @RequestParam(required = false) Boolean isVisited, AnswerForm answerForm) {
+	public String detail(Model model, @PathVariable Integer id, @RequestParam(required = false) Boolean isVisited, AnswerForm answerForm, HttpServletRequest request) {
 		Question question = questionService.getQuestion(id);
 
 		// 방문한 적이 없을때만 조회수 증가
-		if (isVisited == null || !isVisited) {
+		if (isVisited != null && !isVisited) {
 			questionService.updateQuestionView(question);
 		}
 
 		model.addAttribute("question", question);
 
 		// 요청에 AJAX 헤더가 있는 경우 부분 페이지 반환
-		if (Ut.AjaxUtils.isAjaxRequest()) {
+		if (Ut.AjaxUtils.isAjaxRequest(request)) {
 			return "question/question_detail :: #questionDetail";
 		}
 
@@ -97,7 +98,7 @@ public class QuestionController {
 		if (bindingResult.hasErrors()) {
 			return "question/question_form";
 		}
-		Question question = this.questionService.getQuestion(id);
+		Question question = questionService.getQuestion(id);
 		if (!question.getAuthor().getUsername().equals(principal.getName())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
 		}
