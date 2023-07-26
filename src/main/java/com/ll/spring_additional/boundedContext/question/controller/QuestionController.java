@@ -42,23 +42,31 @@ public class QuestionController {
 		return "question/question_list";
 	}
 
-	@GetMapping("/detail")
-	@ResponseBody
-	public String viewCheck(Model model, @RequestParam Integer questionId, @RequestParam Boolean isVisited, AnswerForm answerForm) {
-		Question question = questionService.getQuestion(questionId);
-
-		// 방문한 적이 없을때만 조회수 증가
-		if(!isVisited) {
-			questionService.updateQuestionView(question);
-		}
-
-		// Ajax에 리다이렉트 url 알려주기
-		return "/question/detail/%d".formatted(questionId);
-	}
+	// @GetMapping("/detail")
+	// @ResponseBody
+	// public String viewCheck(Model model, @RequestParam Integer questionId, @RequestParam Boolean isVisited, AnswerForm answerForm) {
+	// 	Question question = questionService.getQuestion(questionId);
+	//
+	// 	// 방문한 적이 없을때만 조회수 증가
+	// 	if(!isVisited) {
+	// 		questionService.updateQuestionView(question);
+	// 	}
+	//
+	// 	// Ajax에 리다이렉트 url 알려주기
+	// 	return "/question/detail/%d".formatted(questionId);
+	// }
 
 	@GetMapping("/detail/{id}")
-	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm) {
+	public String detail(Model model, @PathVariable Integer id, @RequestParam(required = false) Boolean isVisited, AnswerForm answerForm) {
 		Question question = questionService.getQuestion(id);
+
+			// 방문한 적이 없을때만 조회수 증가
+			if(isVisited !=null && !isVisited) {
+				questionService.updateQuestionView(question);
+				model.addAttribute("question", question);
+				return "question/question_detail :: #questionDetail";
+			}
+
 		model.addAttribute("question", question);
 		return "question/question_detail";
 	}

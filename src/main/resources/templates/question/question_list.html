@@ -27,13 +27,12 @@
         <tr class="text-center" th:each="question, loop : ${paging}">
             <td th:text="${paging.getTotalElements - (paging.number * paging.size) - loop.index}"></td>
             <td class="text-start">
-                <a href="javascript:;" th:data-question-id="${question.id}"
-                   onclick="showQuestionDetail(this.getAttribute('data-question-id'));"
-                   th:text="${question.subject}"></a>
+                <a th:href="@{|/question/detail/${question.id}|}" th:text="${question.subject}"></a>
                 <span class="text-danger small ms-2"
                       th:if="${#lists.size(question.answerList) > 0}"
                       th:text="${#lists.size(question.answerList)}">
                 </span>
+            </td>
             <td><span th:if="${question.author != null}" th:text="${question.author.username}"></span></td>
             <td th:text="${#temporals.format(question.createDate, 'yyyy-MM-dd HH:mm')}"></td>
             <td th:text="${question.view}"></td>
@@ -75,63 +74,5 @@
         </ul>
     </div>
     <!-- 페이징처리 끝 -->
-
-    <script th:inline="javascript">
-
-        // 로컬스토리지에 해당 게시글 읽은적이 있는지 검사
-        function checkIdInLocalStorage(id) {
-            const visitedPosts = JSON.parse(localStorage.getItem("visitedPosts") || "[]");
-            return visitedPosts.includes(id);
-        }
-
-        // 로컬스토리지에 방문 게시글 번호 추가
-        // null 일 경우 []값이 들어가고, push로 id넣고 새로 세팅(맨 처음)
-        function addIdToLocalStorage(id) {
-            const visitedPosts = JSON.parse(localStorage.getItem("visitedPosts") || "[]");
-            visitedPosts.push(id);
-            localStorage.setItem("visitedPosts", JSON.stringify(visitedPosts));
-        }
-
-        const showQuestionDetail = (questionId) => {
-            const isVisited = checkIdInLocalStorage(questionId);
-
-            if (!isVisited) {
-                addIdToLocalStorage(questionId);
-                $.ajax({
-                    // 요청방식: get
-                    type: "get",
-                    url: "/question/detail",
-                    data: {
-                        "questionId": questionId,
-                        "isVisited" : false
-                    },
-                    success: function (fragment) {
-                        // 성공 시 리다이렉트 url을 받으므로, 이동
-                        location.href=fragment;
-                    },
-                    error: function (err) {
-                        console.log("요청 실패", err);
-                    }
-                });
-            }
-            else {
-                $.ajax({
-                    type: "get",
-                    url: "/question/detail",
-                    data: {
-                        "questionId": questionId,
-                        "isVisited" : true
-                    },
-                    success: function (fragment) {
-                        // 성공 시 리다이렉트 url을 받으므로, 이동
-                        location.href=fragment;
-                    },
-                    error: function (err) {
-                        console.log("요청 실패", err);
-                    }
-                });
-            }
-        }
-    </script>
 </main>
 </html>
