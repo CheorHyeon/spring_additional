@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.ll.spring_additional.base.exception.DataNotFoundException;
 import com.ll.spring_additional.boundedContext.answer.form.AnswerForm;
+import com.ll.spring_additional.boundedContext.answer.service.AnswerService;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.question.form.QuestionForm;
 import com.ll.spring_additional.boundedContext.question.service.QuestionService;
@@ -35,8 +35,10 @@ public class QuestionController {
 	private final QuestionService questionService;
 	private final UserService userService;
 
+	private final AnswerService answerService;
+
 	@GetMapping("/list")
-	public String list(Model model, @RequestParam(value="page", defaultValue="0") int page
+	public String list(Model model, @RequestParam(value = "page", defaultValue = "0") int page
 		, @RequestParam(value = "kw", defaultValue = "") String kw) {
 		Page<Question> paging = questionService.getList(page, kw);
 		model.addAttribute("paging", paging);
@@ -44,21 +46,47 @@ public class QuestionController {
 	}
 
 	@PreAuthorize("isAuthenticated()")
-	@GetMapping("/list/{id}")
-	public String list(Model model, @PathVariable Long id, @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue = "") String kw,
+	@GetMapping("/list/byQuestion/{id}")
+	public String personalListByQuestionUserId(Model model, @PathVariable Long id,
+		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "") String kw,
 		Principal principal) {
 
 		SiteUser siteUser = userService.getUser(principal.getName());
 
-		if(siteUser.getId() != id) {
+		if (siteUser.getId() != id) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "조회 권한이 없습니다.");
 		}
 
-		Page<Question> paging = questionService.getPersonalList(page, kw, id);
+		Page<Question> paging = questionService.getPersonalQuestionListByQuestionAuthorId(page, kw, id);
 		model.addAttribute("user", siteUser);
 		model.addAttribute("paging", paging);
+		// 동일한 템플릿 사용 -> 총 답변수로 표기하기 위함
+		model.addAttribute("type", "총 질문수");
 		return "question/personal_list";
 	}
+
+	@PreAuthorize("isAuthenticated()")
+	@GetMapping("/list/byAnswer/{id}")
+	public String personalListByAnswerUserId(Model model, @PathVariable Long id,
+		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "") String kw, Principal principal) {
+		SiteUser siteUser = userService.getUser(principal.getName());
+
+		if (siteUser.getId() != id) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "조회 권한이 없습니다.");
+		}
+
+		// 총 답변 수 View에 나타내기 위함
+		Long answerCount = answerService.getAnswerCount(siteUser);
+		model.addAttribute("answerCount", answerCount);
+
+		Page<Question> paging = questionService.getPersonalQuestionListByAnswer_AuthorId(page, kw, id);
+		model.addAttribute("user", siteUser);
+		model.addAttribute("paging", paging);
+		// 동일한 템플릿 사용 -> 총 답변수로 표기하기 위함
+		model.addAttribute("type", "총 답변수");
+		return "question/personal_list";
+	}
+
 	@GetMapping("/detail/{id}")
 	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm) {
 		Question question = questionService.getQuestion(id);
@@ -81,7 +109,7 @@ public class QuestionController {
 
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/create")
-	public String questionCreate(QuestionForm questionForm){
+	public String questionCreate(QuestionForm questionForm) {
 		return "question/question_form";
 	}
 
@@ -100,7 +128,7 @@ public class QuestionController {
 	@GetMapping("/modify/{id}")
 	public String questionModify(QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal) {
 		Question question = questionService.getQuestion(id);
-		if(!question.getAuthor().getUsername().equals(principal.getName())) {
+		if (!question.getAuthor().getUsername().equals(principal.getName())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
 		}
 		questionForm.setSubject(question.getSubject());

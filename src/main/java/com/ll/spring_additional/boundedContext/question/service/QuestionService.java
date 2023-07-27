@@ -83,11 +83,19 @@ public class QuestionService {
 		return questionRepository.findTop5ByAuthorOrderByCreateDateDesc(author);
 	}
 
-	// 유저 개인별 질문 모음
-	public Page<Question> getPersonalList(int page, String kw, Long authorId) {
+	// 유저 개인별 질문 모음(질문자)
+	public Page<Question> getPersonalQuestionListByQuestionAuthorId(int page, String kw, Long authorId) {
 		List<Sort.Order> sorts = new ArrayList<>();
 		sorts.add(Sort.Order.desc("createDate"));
 		Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts)); //페이지 번호, 개수
 		return questionRepository.findAllByKeywordAndAuthorId(kw, authorId, pageable);
+	}
+
+	// 유저 개인별 질문 모음(답변자)
+	public Page<Question> getPersonalQuestionListByAnswer_AuthorId(int page, String kw, Long answerAuthorId) {
+		List<Sort.Order> sorts = new ArrayList<>();
+		sorts.add(Sort.Order.desc("createDate"));
+		Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts)); //페이지 번호, 개수
+		return questionRepository.findAllByKeywordAndAndAnswer_AuthorId(kw, answerAuthorId, pageable);
 	}
 }
