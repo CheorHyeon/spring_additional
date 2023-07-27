@@ -1,5 +1,7 @@
 package com.ll.spring_additional.boundedContext.user.entity;
 
+import com.ll.spring_additional.standard.util.Ut;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -24,4 +26,8 @@ public class SiteUser {
 
 	@Column(unique = true)
 	private String email;
+
+	public String getJdenticon() {
+		return Ut.hash.sha256(this.username);
+	}
 }

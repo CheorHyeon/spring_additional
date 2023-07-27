@@ -3,12 +3,15 @@
     <title>마이페이지</title>
 </head>
 <body>
-<main layout:fragment="content" class="container d-flex flex-column max-width-xl align-items-center justify-content-center gap-3">
-    <div class="card d-flex flex-column align-items-center" style="margin-top : 10px;">
+<main layout:fragment="content" class="container gap-3" style="width: 500px;">
+    <div class="card d-flex flex-column align-items-center shadow p-3 mb-5 bg-body rounded" style="margin-top : 10px;">
         <div class="card-body gap-3">
             <div class="d-flex align-items-baseline justify-content-center gap-2">
                 <i class="fa-solid fa-user" style="color: #75a8ff;"></i>
                 <p>내 정보</p>
+            </div>
+            <div style="text-align: center; margin-bottom: 16px;">
+                <svg th:data-jdenticon-value="|${user.jdenticon}|" width="150" height="150"></svg>
             </div>
             <div class="d-flex align-items-baseline gap-1">
                 <i class="fa-regular fa-circle-check" style="color: #91c0fd;"></i>
@@ -23,13 +26,13 @@
         </div>
     </div>
 
-    <div class="card d-flex flex-column align-items-center" style="margin-top : 10px;">
+    <div class="card d-flex flex-column align-items-center shadow p-3 mb-5 bg-body rounded" style="margin-top : 10px;">
         <div class="card-body gap-3">
             <div class="d-flex align-items-baseline justify-content-center gap-2">
                 <i class="fa-solid fa-user" style="color: #75a8ff;"></i>
                 <p>나의 질문</p>
                 <p th:text="${'('+ questionCount+')'}"></p>
-              <a th:href="@{|/question/list/byQuestion/${user.id}|}">더보기</a>
+                <a th:href="@{|/question/list/byQuestion/${user.id}|}">더보기</a>
             </div>
             <table class="table">
                 <thead class="table-dark">
@@ -53,7 +56,8 @@
                     <td th:text="${#temporals.format(question.createDate, 'yy-MM-dd')}"
                         style="min-width:80px; padding: 12px 0;"></td>
                     <td th:if="${question.modifyDate == null}">-</td>
-                    <td th:if="${question.modifyDate != null}" th:text="${#temporals.format(question.modifyDate, 'yy-MM-dd')}"
+                    <td th:if="${question.modifyDate != null}"
+                        th:text="${#temporals.format(question.modifyDate, 'yy-MM-dd')}"
                         style="min-width:80px; padding: 12px 0;"></td>
                     <td th:text="${question.view}"></td>
                 </tr>
@@ -62,7 +66,7 @@
         </div>
     </div>
 
-    <div class="card d-flex flex-column align-items-center" style="margin-top : 10px;">
+    <div class="card d-flex flex-column align-items-center shadow p-3 mb-5 bg-body rounded" style="margin-top : 10px;">
         <div class="card-body gap-3">
             <div class="d-flex align-items-baseline justify-content-center gap-2">
                 <i class="fa-solid fa-user" style="color: #75a8ff;"></i>
@@ -70,7 +74,7 @@
                 <p th:text="${'('+ answerCount+')'}"></p>
                 <a th:href="@{|/question/list/byAnswer/${user.id}|}">더보기</a>
             </div>
-            <table class="table">
+            <table class="table table align-middle">
                 <thead class="table-dark">
                 <tr class="text-center">
                     <th>제목</th>
@@ -80,22 +84,25 @@
                 </thead>
                 <tbody>
                 <tr class="text-center" th:each="answer, loop : ${answerList}">
-                    <td class="text-start">
-                        <div class="d-flex gap-2 align-items-baseline">
-                        <i class="fa-regular fa-circle-question" style="color: #75a8ff;"></i>
-                        <a th:href="@{|/question/detail/${answer.question.id}#answer_${answer.id}|}" th:text="${answer.question.subject}"
-                           style="min-width:80px; padding: 12px 0;"></a>
-                        </div>
-                        <div class="d-flex gap-2 align-items-baseline">
-                            <i class="fa-solid fa-a" style="color: #75a8ff;"></i>
-                            <span th:text="${answer.content}" style="min-width:80px; padding: 12px 0;"></span>
+                    <td class="text-start" style="min-width:200px; padding: 12px 0;">
+                        <div class="d-flex flex-column align-items-center justify-center">
+                            <div class="d-flex gap-2 align-items-baseline">
+                                <i class="fa-regular fa-circle-question" style="color: #75a8ff;"></i>
+                                <a th:href="@{|/question/detail/${answer.question.id}#answer_${answer.id}|}"
+                                   th:text="${answer.question.subject}"></a>
+                            </div>
+                            <div class="d-flex gap-2 align-items-baseline">
+                                <i class="fa-solid fa-a" style="color: #75a8ff; display: inline-block;"></i>
+                                <span th:text="${answer.content}"></span>
+                            </div>
                         </div>
                     </td>
                     <td th:text="${#temporals.format(answer.createDate, 'yy-MM-dd')}"
                         style="min-width:80px; padding: 12px 0;"></td>
-                    <td th:if="${answer.modifyDate == null}">-</td>
-                    <td th:if="${answer.modifyDate != null}" th:text="${#temporals.format(answer.modifyDate, 'yy-MM-dd')}"
-                        style="min-width:80px; padding: 12px 0;"></td>
+                    <td th:if="${answer.modifyDate == null}" style="min-width:120px; padding: 12px 0;">-</td>
+                    <td th:if="${answer.modifyDate != null}"
+                        th:text="${#temporals.format(answer.modifyDate, 'yy-MM-dd')}"
+                        style="min-width:120px; padding: 12px 0;"></td>
                 </tr>
                 </tbody>
             </table>
