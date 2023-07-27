@@ -17,15 +17,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.ll.spring_additional.base.exception.DataNotFoundException;
 import com.ll.spring_additional.boundedContext.answer.form.AnswerForm;
+import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.question.form.QuestionForm;
 import com.ll.spring_additional.boundedContext.question.service.QuestionService;
-import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 import com.ll.spring_additional.boundedContext.user.service.UserService;
-import com.ll.spring_additional.standard.util.Ut;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -42,6 +41,23 @@ public class QuestionController {
 		Page<Question> paging = questionService.getList(page, kw);
 		model.addAttribute("paging", paging);
 		return "question/question_list";
+	}
+
+	@PreAuthorize("isAuthenticated()")
+	@GetMapping("/list/{id}")
+	public String list(Model model, @PathVariable Long id, @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue = "") String kw,
+		Principal principal) {
+
+		SiteUser siteUser = userService.getUser(principal.getName());
+
+		if(siteUser.getId() != id) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "조회 권한이 없습니다.");
+		}
+
+		Page<Question> paging = questionService.getPersonalList(page, kw, id);
+		model.addAttribute("user", siteUser);
+		model.addAttribute("paging", paging);
+		return "question/personal_list";
 	}
 	@GetMapping("/detail/{id}")
 	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm) {

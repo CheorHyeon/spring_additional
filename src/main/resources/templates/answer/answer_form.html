@@ -1,5 +1,5 @@
 <html layout:decorate="~{common/layout}">
-<div layout:fragment="content" class="container">
+<main layout:fragment="content" class="container">
     <h5 class="my-3 border-bottom pb-2">답변 수정</h5>
     <form th:object="${answerForm}" th:action method="post">
         <div th:replace="~{common/form_errors :: formErrorsFragment}"></div>
@@ -9,5 +9,5 @@
         </div>
         <input type="submit" value="저장하기" class="btn btn-primary my-2">
     </form>
-</div>
+</main>
 </html>

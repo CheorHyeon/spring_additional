@@ -48,12 +48,13 @@ public class QuestionService {
 	}
 
 	@Transactional
-	public void create(String subject, String content, SiteUser user) {
+	public Question create(String subject, String content, SiteUser user) {
 		Question q = new Question();
 		q.setSubject(subject);
 		q.setContent(content);
 		q.setAuthor(user);
 		questionRepository.save(q);
+		return q;
 	}
 
 	@Transactional
@@ -72,5 +73,21 @@ public class QuestionService {
 	public void vote(Question question, SiteUser siteUser) {
 		question.getVoters().add(siteUser);
 		questionRepository.save(question);
+	}
+
+	public Long getQuestionCount(SiteUser author) {
+		return questionRepository.countByAuthor(author);
+	}
+
+	public List<Question> getQuestionTop5LatestByUser(SiteUser author) {
+		return questionRepository.findTop5ByAuthorOrderByCreateDateDesc(author);
+	}
+
+	// 유저 개인별 질문 모음
+	public Page<Question> getPersonalList(int page, String kw, Long authorId) {
+		List<Sort.Order> sorts = new ArrayList<>();
+		sorts.add(Sort.Order.desc("createDate"));
+		Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts)); //페이지 번호, 개수
+		return questionRepository.findAllByKeywordAndAuthorId(kw, authorId, pageable);
 	}
 }

@@ -1,5 +1,6 @@
 package com.ll.spring_additional.boundedContext.answer.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -55,5 +56,13 @@ public class AnswerService {
 	public void vote(Answer answer, SiteUser siteUser) {
 		answer.getVoters().add(siteUser);
 		answerRepository.save(answer);
+	}
+
+	public Long getAnswerCount(SiteUser author) {
+		return answerRepository.countByAuthor(author);
+	}
+
+	public List<Answer> getAnswerTop5LatestByUser(SiteUser user) {
+		return answerRepository.findTop5ByAuthorOrderByCreateDateDesc(user);
 	}
 }

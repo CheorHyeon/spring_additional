@@ -1,5 +1,5 @@
 <html layout:decorate="~{common/layout}">
-<div layout:fragment="content" class="container my-3">
+<main layout:fragment="content" class="container my-3">
   <form th:action="@{/user/login}" method="post">
     <!-- 로그인 실패 시 파라미터로 error 전달, 스프링 시큐리티 규칙 -->
     <div th:if="${param.error}">
@@ -17,5 +17,5 @@
     </div>
     <button type="submit" class="btn btn-primary">로그인</button>
   </form>
-</div>
+</main>
 </html>

@@ -1,14 +1,25 @@
 package com.ll.spring_additional.boundedContext.user.controller;
+import java.security.Principal;
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.ll.spring_additional.base.exception.DataNotFoundException;
+import com.ll.spring_additional.boundedContext.answer.entity.Answer;
+import com.ll.spring_additional.boundedContext.answer.service.AnswerService;
+import com.ll.spring_additional.boundedContext.question.entity.Question;
+import com.ll.spring_additional.boundedContext.question.service.QuestionService;
 import com.ll.spring_additional.boundedContext.user.Form.UserCreateForm;
+import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 import com.ll.spring_additional.boundedContext.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,6 +30,10 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
 	private final UserService userService;
+
+	private final QuestionService questionService;
+
+	private final AnswerService answerService;
 
 	@GetMapping("/login")
 	public String login() {
@@ -55,5 +70,31 @@ public class UserController {
 			return "user/signup_form";
 		}
 		return "redirect:/";
+	}
+
+	@GetMapping("/mypage")
+	@PreAuthorize("isAuthenticated()")
+	public String showmyPage(Model model, Principal principal)
+	{
+		SiteUser user = userService.getUser(principal.getName());
+
+		if(user == null) {
+			throw new DataNotFoundException("사용자를 찾을 수 없습니다.");
+		}
+		model.addAttribute("user", user);
+
+		Long questionCount = questionService.getQuestionCount(user);
+		model.addAttribute("questionCount", questionCount);
+
+		List<Question> questionList = questionService.getQuestionTop5LatestByUser(user);
+		model.addAttribute("questionList", questionList);
+
+		Long answerCount = answerService.getAnswerCount(user);
+		model.addAttribute("answerCount", answerCount);
+
+		List<Answer> answerList = answerService.getAnswerTop5LatestByUser(user);
+		model.addAttribute("answerList", answerList);
+
+		return "user/my_page";
 	}
 }
