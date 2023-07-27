@@ -96,6 +96,6 @@ public class QuestionService {
 		List<Sort.Order> sorts = new ArrayList<>();
 		sorts.add(Sort.Order.desc("createDate"));
 		Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts)); //페이지 번호, 개수
-		return questionRepository.findAllByKeywordAndAndAnswer_AuthorId(kw, answerAuthorId, pageable);
+		return questionRepository.findAllByKeywordAndAnswer_AuthorId(kw, answerAuthorId, pageable);
 	}
 }
