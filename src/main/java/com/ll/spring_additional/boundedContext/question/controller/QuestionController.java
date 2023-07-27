@@ -44,22 +44,23 @@ public class QuestionController {
 		return "question/question_list";
 	}
 	@GetMapping("/detail/{id}")
-	public String detail(Model model, @PathVariable Integer id, @RequestParam(required = false) Boolean isVisited, AnswerForm answerForm, HttpServletRequest request) {
+	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm) {
 		Question question = questionService.getQuestion(id);
+		model.addAttribute("question", question);
+		return "question/question_detail";
+	}
+
+	@GetMapping("/increase")
+	@ResponseBody
+	public String increaseHit(Integer questionId, @RequestParam(required = false) Boolean isVisited) {
+		Question question = questionService.getQuestion(questionId);
 
 		// 방문한 적이 없을때만 조회수 증가
 		if (isVisited != null && !isVisited) {
 			questionService.updateQuestionView(question);
 		}
 
-		model.addAttribute("question", question);
-
-		// 요청에 AJAX 헤더가 있는 경우 부분 페이지 반환
-		if (Ut.AjaxUtils.isAjaxRequest(request)) {
-			return "question/question_detail :: #questionDetail";
-		}
-
-		return "question/question_detail";
+		return Integer.toString(question.getView());
 	}
 
 	@PreAuthorize("isAuthenticated()")

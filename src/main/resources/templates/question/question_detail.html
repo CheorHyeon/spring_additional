@@ -17,8 +17,8 @@
                     <div th:text="${#temporals.format(question.createDate, 'yyyy-MM-dd HH:mm')}"></div>
                 </div>
                 <div class="badge bg-light text-dark p-2 text-start mx-3">
-                    <div class="mb-2">조회</div>
-                    <div th:text="${question.view}"></div>
+                    <div class="mb-2">조회수</div>
+                    <div th:text="${question.view}" id="questionView"></div>
                 </div>
             </div>
             <div class="my-3">
@@ -126,12 +126,13 @@
                 $.ajax({
                     // 요청방식: get
                     type: "get",
-                    url: "/question/detail/" + questionId,
+                    url: "/question/increase",
                     data: {
-                        "isVisited" : false
+                        "questionId" : questionId,
+                        "isVisited" : isVisited
                     },
                     success: function (fragment) {
-                        $('#questionDetail').html(fragment);
+                        $('#questionView').text(fragment);
                     },
                     error: function (err) {
                         console.log("요청 실패", err);
