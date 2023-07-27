@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.ll.spring_additional.boundedContext.answer.form.AnswerForm;
@@ -22,7 +23,9 @@ import com.ll.spring_additional.boundedContext.question.service.QuestionService;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 import com.ll.spring_additional.boundedContext.user.service.UserService;
+import com.ll.spring_additional.standard.util.Ut;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -40,12 +43,24 @@ public class QuestionController {
 		model.addAttribute("paging", paging);
 		return "question/question_list";
 	}
-
 	@GetMapping("/detail/{id}")
-	public String detail(Model model, @PathVariable("id") Integer id, AnswerForm answerForm) {
-		Question question = this.questionService.getQuestion(id);
+	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm) {
+		Question question = questionService.getQuestion(id);
 		model.addAttribute("question", question);
 		return "question/question_detail";
+	}
+
+	@GetMapping("/increase")
+	@ResponseBody
+	public String increaseHit(Integer questionId, @RequestParam(required = false) Boolean isVisited) {
+		Question question = questionService.getQuestion(questionId);
+
+		// 방문한 적이 없을때만 조회수 증가
+		if (isVisited != null && !isVisited) {
+			questionService.updateQuestionView(question);
+		}
+
+		return Integer.toString(question.getView());
 	}
 
 	@PreAuthorize("isAuthenticated()")
@@ -84,7 +99,7 @@ public class QuestionController {
 		if (bindingResult.hasErrors()) {
 			return "question/question_form";
 		}
-		Question question = this.questionService.getQuestion(id);
+		Question question = questionService.getQuestion(id);
 		if (!question.getAuthor().getUsername().equals(principal.getName())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
 		}

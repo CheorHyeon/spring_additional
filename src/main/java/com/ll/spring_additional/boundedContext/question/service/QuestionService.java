@@ -41,6 +41,13 @@ public class QuestionService {
 	}
 
 	@Transactional
+	public Question updateQuestionView(Question question) {
+		question.updateView();
+		questionRepository.save(question);
+		return question;
+	}
+
+	@Transactional
 	public void create(String subject, String content, SiteUser user) {
 		Question q = new Question();
 		q.setSubject(subject);

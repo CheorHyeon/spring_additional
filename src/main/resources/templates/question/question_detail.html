@@ -1,5 +1,5 @@
 <html layout:decorate="~{common/layout}">
-<div layout:fragment="content" class="container my-3">
+<main layout:fragment="content" class="container my-3" id="questionDetail">
     <!-- 질문 -->
     <h2 class="border-bottom py-2" th:text="${question.subject}"></h2>
     <div class="card my-3">
@@ -15,6 +15,10 @@
                         <span th:if="${question.author != null}" th:text="${question.author.username}"></span>
                     </div>
                     <div th:text="${#temporals.format(question.createDate, 'yyyy-MM-dd HH:mm')}"></div>
+                </div>
+                <div class="badge bg-light text-dark p-2 text-start mx-3">
+                    <div class="mb-2">조회수</div>
+                    <div th:text="${question.view}" id="questionView"></div>
                 </div>
             </div>
             <div class="my-3">
@@ -88,5 +92,54 @@
         <input sec:authorize="isAnonymous()" disabled type="submit" value="답변등록" class="btn btn-primary my-2">
         <input sec:authorize="isAuthenticated()" type="submit" value="답변등록" class="btn btn-primary my-2">
     </form>
-</div>
+
+    <script th:inline="javascript">
+
+        window.onload = function () {
+            checkQuestionRead(); // html 로드 시 바로 Ajax 요청
+        };
+
+        // 로컬스토리지에 해당 게시글 읽은적이 있는지 검사
+        function checkIdInLocalStorage(id) {
+            const visitedPosts = JSON.parse(localStorage.getItem("visitedPosts") || "[]");
+            return visitedPosts.includes(id);
+        }
+
+        // 로컬스토리지에 방문 게시글 번호 추가
+        // null 일 경우 []값이 들어가고, push로 id넣고 새로 세팅(맨 처음)
+        function addIdToLocalStorage(id) {
+            const visitedPosts = JSON.parse(localStorage.getItem("visitedPosts") || "[]");
+            visitedPosts.push(id);
+            localStorage.setItem("visitedPosts", JSON.stringify(visitedPosts));
+        }
+
+        const checkQuestionRead = () => {
+            const questionId = [[${question.id}]];
+
+            // 방문 내역 검사
+            const isVisited = checkIdInLocalStorage(questionId);
+
+            // 방문하지 않았을 때만 추가하고 조회수 증가하도록
+            // true인 경우는 조건 제외함(요청 안보내도 되니)
+            if (!isVisited) {
+                addIdToLocalStorage(questionId);
+                $.ajax({
+                    // 요청방식: get
+                    type: "get",
+                    url: "/question/increase",
+                    data: {
+                        "questionId" : questionId,
+                        "isVisited" : isVisited
+                    },
+                    success: function (fragment) {
+                        $('#questionView').text(fragment);
+                    },
+                    error: function (err) {
+                        console.log("요청 실패", err);
+                    }
+                });
+            }
+        }
+    </script>
+</main>
 </html>

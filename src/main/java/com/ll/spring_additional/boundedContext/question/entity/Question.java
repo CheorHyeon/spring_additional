@@ -66,4 +66,11 @@ public class Question {
 
 	@ManyToMany
 	private Set<SiteUser> voters = new LinkedHashSet<>();
+
+	private int view = 0;
+
+	public void updateView() {
+		this.view++;
+	}
+
 }
