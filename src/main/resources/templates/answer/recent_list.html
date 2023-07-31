@@ -15,7 +15,7 @@
         </thead>
         <tbody>
         <tr class="text-center" th:each="answer, loop : ${answerList}">
-            <td>-</td> <!-- TODO : 카테고리 후 수정 필요 -->
+            <td th:text="${answer.question.categoryAsString}">-</td>
             <td th:text="${answer.author.username}"></td>
             <td class="text-start">
                 <a th:href="@{|/question/detail/${answer.question.id}#answer_${answer.id}|}">

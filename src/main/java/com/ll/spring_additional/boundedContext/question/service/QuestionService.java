@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ll.spring_additional.base.exception.DataNotFoundException;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
+import com.ll.spring_additional.boundedContext.question.questionEnum.QuestionEnum;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 import com.ll.spring_additional.boundedContext.question.repository.QuestionRepository;
 
@@ -24,11 +25,11 @@ import lombok.RequiredArgsConstructor;
 public class QuestionService {
 	private final QuestionRepository questionRepository;
 
-	public Page<Question> getList(int page, String kw) {
+	public Page<Question> getList(int category, int page, String kw) {
 		List<Sort.Order> sorts = new ArrayList<>();
 		sorts.add(Sort.Order.desc("createDate"));
 		Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts)); //페이지 번호, 개수
-		return questionRepository.findAllByKeyword(kw, pageable);
+		return questionRepository.findAllByKeywordAndType(kw, category, pageable);
 	}
 
 	public Question getQuestion(Integer id) {
@@ -48,11 +49,12 @@ public class QuestionService {
 	}
 
 	@Transactional
-	public Question create(String subject, String content, SiteUser user) {
+	public Question create(String subject, String content, SiteUser user, int category) {
 		Question q = new Question();
 		q.setSubject(subject);
 		q.setContent(content);
 		q.setAuthor(user);
+		q.setCategory(category);
 		questionRepository.save(q);
 		return q;
 	}
