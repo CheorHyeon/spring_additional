@@ -65,4 +65,8 @@ public class AnswerService {
 	public List<Answer> getAnswerTop5LatestByUser(SiteUser user) {
 		return answerRepository.findTop5ByAuthorOrderByCreateDateDesc(user);
 	}
+
+	public List<Answer> getAnswerTop15Latest() {
+		return answerRepository.findTop15ByOrderByCreateDateDesc();
+	}
 }
