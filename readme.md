@@ -34,13 +34,17 @@
   - [x] 조회수
     - 로컬 스토리지와 Ajax 활용(브라우저 당 조회수 1회만 증가)
     - [PR 바로가기](https://github.com/CheorHyeon/spring_additional/pull/4)
-  - [ ] 프로필
+  - [x] 프로필
     - 사용자에 대한 기본정보
     - 작성한 질문, 답변 확인 가능
     - [Issue 바로가기](https://github.com/CheorHyeon/spring_additional/issues/5)
-  - [ ] 최근 답변, 최근 댓글
-    - 최근 답변 조회 
-  - [ ] 카테고리
+  - [x] 최근 답변, 최근 댓글
+    - 최근 답변 조회
+    - 최근 댓글은 미구현
+    - [PR 바로가기](https://github.com/CheorHyeon/spring_additional/pull/7)
+  - [x] 카테고리
+    - 게시판 3개 구분(질문과답변, 자유게시판, 버그및건의)
+    - [PR 바로가기](https://github.com/CheorHyeon/spring_additional/pull/9)
   - [ ] 마크다운 에디터
   - [ ] 비밀번호 찾기와 변경
   - [ ] 소셜 로그인(카카오, 구글)
