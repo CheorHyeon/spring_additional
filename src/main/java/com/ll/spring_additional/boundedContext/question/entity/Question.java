@@ -94,5 +94,18 @@ public class Question {
 		}
 	}
 
+	public String getCategoryAsString() {
+		switch (this.category) {
+			case 0:
+				return "질문과답변";
+			case 1:
+				return "자유게시판";
+			case 2:
+				return "버그및건의";
+			default:
+				throw new RuntimeException("올바르지 않은 접근입니다.");
+		}
+	}
+
 
 }
