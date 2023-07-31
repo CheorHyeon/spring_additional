@@ -12,4 +12,6 @@ public interface AnswerRepository extends JpaRepository<Answer, Integer> {
 	Long countByAuthor(SiteUser author);
 
 	List<Answer> findTop5ByAuthorOrderByCreateDateDesc(SiteUser user);
+
+	List<Answer> findTop15ByOrderByCreateDateDesc();
 }

@@ -1,6 +1,7 @@
 package com.ll.spring_additional.boundedContext.answer.controller;
 
 import java.security.Principal;
+import java.util.List;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -95,5 +96,14 @@ public class AnswerController {
 		answerService.vote(answer, siteUser);
 		return String.format("redirect:/question/detail/%s#answer_%s",
 			answer.getQuestion().getId(), answer.getId());
+	}
+
+	@GetMapping("/recent_list")
+	public String showRecentList(Model model) {
+		List<Answer> answerList = answerService.getAnswerTop15Latest();
+
+		model.addAttribute("answerList", answerList);
+
+		return "answer/recent_list";
 	}
 }
