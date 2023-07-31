@@ -1,8 +1,31 @@
 <html layout:decorate="~{common/layout}">
-<main layout:fragment="content" class="container my-3">
+<main layout:fragment="content" class="container my-3 d-flex gap-5">
+    <div style="margin-top:10%;">
+        <ul class="list-group">
+            <li class="list-group-item" aria-current="true" th:classappend="${boardName == 0} ? 'active'">
+                <a th:href="@{/question/list/qna}">질문과답변</a>
+            </li>
+            <li class="list-group-item" th:classappend="${boardName == 1} ? 'active'">
+                <a th:href="@{/question/list/free}">자유게시판</a>
+            </li>
+            <li class="list-group-item" th:classappend="${boardName == 2} ? 'active'">
+                <a th:href="@{/question/list/bug}">버그및건의</a>
+            </li>
+        </ul>
+    </div>
+    <div class="flex-grow-1">
     <div class="row my-3">
+        <h3 class="border-bottom py-2" th:if="${boardName == 0}">질문과답변</h3>
+        <h3 class="border-bottom py-2" th:if="${boardName == 1}">자유게시판</h3>
+        <h3 class="border-bottom py-2"  th:if="${boardName == 2}">버그및건의</h3>
         <div class="col-6">
-            <a th:href="@{/question/create}" class="btn btn-primary">질문 등록하기</a>
+            <!-- 현재 페이지 주소에 따라 질문 등록하기 링크 동적 생성 -->
+            <a onclick="createQuestion(event)" class="btn btn-primary"
+               th:if="${boardName == 0}">질문과답변 등록</a>
+            <a onclick="createQuestion(event)" class="btn btn-primary"
+               th:if="${boardName == 1}">자유게시판 등록</a>
+            <a onclick="createQuestion(event)" class="btn btn-primary"
+               th:if="${boardName == 2}">버그및건의 등록</a>
         </div>
         <div class="col-6">
             <form>
@@ -74,5 +97,17 @@
         </ul>
     </div>
     <!-- 페이징처리 끝 -->
+    </div>
+
+        <script th:inline="javascript">
+            const createQuestion = (event) => {
+            event.preventDefault(); // 호출된 이벤트의 기본 작동 방식 중단
+            const createQuestionLink = event.target; // 사용자가 클릭한 요소
+            const currentPath = window.location.pathname;
+            const newPath = currentPath.replace('/question/list/', '/question/create/');
+            createQuestionLink.setAttribute('href', newPath);  // 사용자가 클릭한 요소의 속성 설정
+            window.location.href = newPath;
+        }
+    </script>
 </main>
 </html>

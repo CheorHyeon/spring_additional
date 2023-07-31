@@ -22,12 +22,15 @@ public interface QuestionRepository extends JpaRepository<Question, Integer> {
 		+ "left outer join Answer a on a.question=q "
 		+ "left outer join SiteUser u2 on a.author=u2 "
 		+ "where "
+		+ "   (q.category = :category) "
+		+ "   and ( "
 		+ "   q.subject like %:kw% "
 		+ "   or q.content like %:kw% "
 		+ "   or u1.username like %:kw% "
 		+ "   or a.content like %:kw% "
-		+ "   or u2.username like %:kw% ")
-	Page<Question> findAllByKeyword(@Param("kw") String kw, Pageable pageable);
+		+ "   or u2.username like %:kw% "
+		+ "   )")
+	Page<Question> findAllByKeywordAndType(@Param("kw") String kw, @Param("category") Integer category, Pageable pageable);
 
 	Long countByAuthor(SiteUser author);
 
@@ -65,4 +68,5 @@ public interface QuestionRepository extends JpaRepository<Question, Integer> {
 		+ "       or u2.username like %:kw% "
 		+ "   )")
 	Page<Question> findAllByKeywordAndAnswer_AuthorId(@Param("kw") String kw, @Param("authorId") Long authorId, Pageable pageable);
+
 }

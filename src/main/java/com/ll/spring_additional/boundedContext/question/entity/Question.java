@@ -13,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.ll.spring_additional.boundedContext.answer.entity.Answer;
+import com.ll.spring_additional.boundedContext.question.questionEnum.QuestionEnum;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 
 import jakarta.persistence.CascadeType;
@@ -72,5 +73,26 @@ public class Question {
 	public void updateView() {
 		this.view++;
 	}
+
+	/* 게시판 분류
+	0 : 질문답변
+	1 : 강좌
+	2 : 자유게시판
+	 */
+	private int category;
+
+	public QuestionEnum getCategoryAsEnum() {
+		switch (this.category) {
+			case 0:
+				return QuestionEnum.QNA;
+			case 1:
+				return QuestionEnum.FREE;
+			case 2:
+				return QuestionEnum.BUG;
+			default:
+				throw new RuntimeException("올바르지 않은 접근입니다.");
+		}
+	}
+
 
 }

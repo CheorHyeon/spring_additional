@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class HomeController {
 	@GetMapping("/")
 	public String root() {
-		return "redirect:/question/list";
+		return "redirect:/question/list/qna";
 	}
 }

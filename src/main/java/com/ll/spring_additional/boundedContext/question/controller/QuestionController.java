@@ -21,6 +21,7 @@ import com.ll.spring_additional.boundedContext.answer.form.AnswerForm;
 import com.ll.spring_additional.boundedContext.answer.service.AnswerService;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.question.form.QuestionForm;
+import com.ll.spring_additional.boundedContext.question.questionEnum.QuestionEnum;
 import com.ll.spring_additional.boundedContext.question.service.QuestionService;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 import com.ll.spring_additional.boundedContext.user.service.UserService;
@@ -37,10 +38,18 @@ public class QuestionController {
 
 	private final AnswerService answerService;
 
-	@GetMapping("/list")
-	public String list(Model model, @RequestParam(value = "page", defaultValue = "0") int page
+	@GetMapping("/list/{type}")
+	public String list(Model model, @PathVariable String type, @RequestParam(value = "page", defaultValue = "0") int page
 		, @RequestParam(value = "kw", defaultValue = "") String kw) {
-		Page<Question> paging = questionService.getList(page, kw);
+		int category = switch (type) {
+			case "qna" -> QuestionEnum.QNA.getStatus();
+			case "free" -> QuestionEnum.FREE.getStatus();
+			case "bug" -> QuestionEnum.BUG.getStatus();
+			default -> throw new RuntimeException("올바르지 않은 접근입니다.");
+		};
+
+		model.addAttribute("boardName", category);
+		Page<Question> paging = questionService.getList(category, page, kw);
 		model.addAttribute("paging", paging);
 		return "question/question_list";
 	}
@@ -108,29 +117,52 @@ public class QuestionController {
 	}
 
 	@PreAuthorize("isAuthenticated()")
-	@GetMapping("/create")
-	public String questionCreate(QuestionForm questionForm) {
+	@GetMapping("/create/{type}")
+	public String showCreate(@PathVariable String type, QuestionForm questionForm, Model model) {
+		switch (type) {
+			case "qna" -> model.addAttribute("boardName", "질문과답변 작성");
+			case "free" -> model.addAttribute("boardName", "자유게시판 작성");
+			case "bug" -> model.addAttribute("boardName", "버그및건의 작성");
+			default -> throw new RuntimeException("올바르지 않은 접근입니다.");
+		}
+
 		return "question/question_form";
 	}
 
 	@PreAuthorize("isAuthenticated()")
-	@PostMapping("/create")
-	public String questionCreate(@Valid QuestionForm questionForm, BindingResult bindingResult, Principal principal) {
+	@PostMapping("/create/{type}")
+	public String questionCreate(@Valid QuestionForm questionForm, @PathVariable String type, BindingResult bindingResult, Principal principal) {
 		if (bindingResult.hasErrors()) {
 			return "question/question_form";
 		}
+
+		int category = switch (type) {
+			case "qna" -> QuestionEnum.QNA.getStatus();
+			case "free" -> QuestionEnum.FREE.getStatus();
+			case "bug" -> QuestionEnum.BUG.getStatus();
+			default -> throw new RuntimeException("올바르지 않은 접근입니다.");
+		};
+
 		SiteUser siteUser = userService.getUser(principal.getName());
-		questionService.create(questionForm.getSubject(), questionForm.getContent(), siteUser);
-		return "redirect:/question/list";
+		questionService.create(questionForm.getSubject(), questionForm.getContent(), siteUser, category);
+		return "redirect:/question/list/%s".formatted(type);
 	}
 
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/modify/{id}")
-	public String questionModify(QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal) {
+	public String questionModify(QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal, Model model) {
 		Question question = questionService.getQuestion(id);
 		if (!question.getAuthor().getUsername().equals(principal.getName())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
 		}
+
+		switch (question.getCategoryAsEnum()) {
+			case QNA-> model.addAttribute("boardName", "질문과답변 수정");
+			case FREE -> model.addAttribute("boardName", "자유게시판 수정");
+			case BUG -> model.addAttribute("boardName", "버그및건의 수정");
+			default -> throw new RuntimeException("올바르지 않은 접근입니다.");
+		}
+
 		questionForm.setSubject(question.getSubject());
 		questionForm.setContent(question.getContent());
 		return "question/question_form";
