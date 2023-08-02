@@ -1,4 +1,4 @@
-package com.ll.spring_additional.boundedContext.user;
+package com.ll.spring_additional.boundedContext.user.userRole;
 
 import lombok.Getter;
 

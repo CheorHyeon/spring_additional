@@ -2,9 +2,11 @@ package com.ll.spring_additional.boundedContext.user.controller;
 import java.security.Principal;
 import java.util.List;
 
+import groovy.util.logging.Slf4j;
 import jakarta.validation.Valid;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,16 +21,18 @@ import com.ll.spring_additional.boundedContext.answer.service.AnswerService;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.question.service.QuestionService;
 import com.ll.spring_additional.boundedContext.user.Form.UserCreateForm;
+import com.ll.spring_additional.boundedContext.user.Form.UserPWFindForm;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 import com.ll.spring_additional.boundedContext.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/user")
 public class UserController {
-
 	private final UserService userService;
 
 	private final QuestionService questionService;
@@ -96,5 +100,41 @@ public class UserController {
 		model.addAttribute("answerList", answerList);
 
 		return "user/my_page";
+	}
+	@PreAuthorize("isAnonymous()")
+	@GetMapping("/pw_find")
+	public String showFindPassWord(UserPWFindForm userPWFindForm) {
+		return "user/pw_find";
+	}
+
+	@PreAuthorize("isAnonymous()")
+	@PostMapping("/pw_find")
+	public String findPassWord(Model model, UserPWFindForm userPWFindForm, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+		if(bindingResult.hasErrors()) {
+			return "user/pw_find";
+		}
+
+		SiteUser user = userService.getUser(userPWFindForm.getUsername());
+
+		if(user == null) {
+			bindingResult.reject("notFindUser", "일치하는 사용자가 없습니다.");
+			return "user/pw_find";
+		}
+
+		if(!user.getEmail().equals(userPWFindForm.getEmail())){
+			bindingResult.reject("notCorrectEmail", "등록된 회원 정보와 이메일이 다릅니다.");
+			return "user/pw_find";
+		}
+
+		String tempPW = userService.setTemporaryPW(user);
+
+		// 이메일 전송
+		// @Async 붙은 메서드는 동일한 클래스에서 호출할 수 없기에 컨트롤러에서 메일 발송 요청
+		userService.sendEmail(userPWFindForm.getEmail(), user.getUsername(), tempPW);
+
+		// 로그인 페이지에서 보여줄 성공 메시지를 플래시 애트리뷰트로 추가
+		redirectAttributes.addFlashAttribute("successMessage", "임시 비밀번호가 이메일로 전송되었습니다. 이메일 확인 후 로그인 해주세요.");
+
+		return "redirect:/user/login";
 	}
 }

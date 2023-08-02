@@ -7,6 +7,7 @@
         사용자ID 또는 비밀번호를 확인해 주세요.
       </div>
     </div>
+    <div th:if="${successMessage !=null}"} class="alert alert-success" th:text="${successMessage}"></div>
     <div class="mb-3">
       <label for="username" class="form-label">사용자ID</label>
       <input type="text" name="username" id="username" class="form-control">
@@ -17,5 +18,8 @@
     </div>
     <button type="submit" class="btn btn-primary">로그인</button>
   </form>
+  <a href="/user/pw_find" style="display:block; margin-top:15px;">
+  <button class="btn btn-primary">비밀번호 찾기</button>
+  </a>
 </main>
 </html>
