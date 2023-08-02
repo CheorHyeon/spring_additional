@@ -45,8 +45,13 @@
   - [x] 카테고리
     - 게시판 3개 구분(질문과답변, 자유게시판, 버그및건의)
     - [PR 바로가기](https://github.com/CheorHyeon/spring_additional/pull/9)
-  - [ ] 마크다운 에디터
-  - [ ] 비밀번호 찾기와 변경
+  - [x] 마크다운 에디터
+    - 마크다운 에디터(simpleMDE) 적용
+    - [PR 바로가기](https://github.com/CheorHyeon/spring_additional/pull/11)
+  - [x] 비밀번호 찾기와 변경
+    - 임시 비밀번호 이메일 발송(비밀번호 찾기)
+    - 비밀번호 변경
+    - [PR 바로가기](https://github.com/CheorHyeon/spring_additional/pull/13)
   - [ ] 소셜 로그인(카카오, 구글)
   - [ ] 답변 페이징, 정렬
   - [ ] 댓글
