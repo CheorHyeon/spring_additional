@@ -1,33 +1,33 @@
 package com.ll.spring_additional.boundedContext.user.controller;
+
 import java.security.Principal;
 import java.util.List;
 
-import groovy.util.logging.Slf4j;
-import jakarta.validation.Valid;
-
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.ll.spring_additional.base.exception.DataNotFoundException;
 import com.ll.spring_additional.boundedContext.answer.entity.Answer;
 import com.ll.spring_additional.boundedContext.answer.service.AnswerService;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.question.service.QuestionService;
+import com.ll.spring_additional.boundedContext.user.Form.PWChangeForm;
 import com.ll.spring_additional.boundedContext.user.Form.UserCreateForm;
 import com.ll.spring_additional.boundedContext.user.Form.UserPWFindForm;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 import com.ll.spring_additional.boundedContext.user.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @RequiredArgsConstructor
 @Controller
@@ -38,6 +38,8 @@ public class UserController {
 	private final QuestionService questionService;
 
 	private final AnswerService answerService;
+
+	private final PasswordEncoder passwordEncoder;
 
 	@GetMapping("/login")
 	public String login() {
@@ -64,11 +66,11 @@ public class UserController {
 		try {
 			userService.create(userCreateForm.getUsername(),
 				userCreateForm.getEmail(), userCreateForm.getPassword1());
-		}catch(DataIntegrityViolationException e) {
+		} catch (DataIntegrityViolationException e) {
 			e.printStackTrace();
 			bindingResult.reject("signupFailed", "이미 등록된 사용자입니다.");
 			return "user/signup_form";
-		}catch(Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			bindingResult.reject("signupFailed", e.getMessage());
 			return "user/signup_form";
@@ -78,11 +80,10 @@ public class UserController {
 
 	@GetMapping("/mypage")
 	@PreAuthorize("isAuthenticated()")
-	public String showmyPage(Model model, Principal principal)
-	{
+	public String showmyPage(Model model, Principal principal) {
 		SiteUser user = userService.getUser(principal.getName());
 
-		if(user == null) {
+		if (user == null) {
 			throw new DataNotFoundException("사용자를 찾을 수 없습니다.");
 		}
 		model.addAttribute("user", user);
@@ -101,6 +102,7 @@ public class UserController {
 
 		return "user/my_page";
 	}
+
 	@PreAuthorize("isAnonymous()")
 	@GetMapping("/pw_find")
 	public String showFindPassWord(UserPWFindForm userPWFindForm) {
@@ -109,19 +111,20 @@ public class UserController {
 
 	@PreAuthorize("isAnonymous()")
 	@PostMapping("/pw_find")
-	public String findPassWord(Model model, UserPWFindForm userPWFindForm, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
-		if(bindingResult.hasErrors()) {
+	public String findPassWord(Model model, @Valid UserPWFindForm userPWFindForm, BindingResult bindingResult,
+		RedirectAttributes redirectAttributes) {
+		if (bindingResult.hasErrors()) {
 			return "user/pw_find";
 		}
 
 		SiteUser user = userService.getUser(userPWFindForm.getUsername());
 
-		if(user == null) {
+		if (user == null) {
 			bindingResult.reject("notFindUser", "일치하는 사용자가 없습니다.");
 			return "user/pw_find";
 		}
 
-		if(!user.getEmail().equals(userPWFindForm.getEmail())){
+		if (!user.getEmail().equals(userPWFindForm.getEmail())) {
 			bindingResult.reject("notCorrectEmail", "등록된 회원 정보와 이메일이 다릅니다.");
 			return "user/pw_find";
 		}
@@ -136,5 +139,40 @@ public class UserController {
 		redirectAttributes.addFlashAttribute("successMessage", "임시 비밀번호가 이메일로 전송되었습니다. 이메일 확인 후 로그인 해주세요.");
 
 		return "redirect:/user/login";
+	}
+
+	@PreAuthorize("isAuthenticated()")
+	@GetMapping("/change/passwd")
+	public String showChangePW(@ModelAttribute("pwChangeForm") PWChangeForm pwChangeForm) {
+		return "user/pw_change";
+	}
+
+	@PreAuthorize("isAuthenticated()")
+	@PostMapping("/change/passwd")
+	public String changePW(@Valid @ModelAttribute("pwChangeForm") PWChangeForm pwChangeForm, BindingResult bindingResult, Model model,
+		Principal principal, RedirectAttributes redirectAttributes) {
+		if (bindingResult.hasErrors()) {
+			return "user/pw_change";
+		}
+
+		SiteUser user = userService.getUser(principal.getName());
+
+		// 이전 패스워드와 맞지 않을경우
+		if (!passwordEncoder.matches(pwChangeForm.getPrePassword(), user.getPassword())) {
+			bindingResult.reject("notMatchPW", "이전 비밀번호가 일치하지 않습니다.");
+			return "user/pw_change";
+		}
+		// 새 비밀번호, 비밀번호 확인 창 일치하지 않을경우
+		if (!pwChangeForm.getNewPassword1().equals(pwChangeForm.getNewPassword2())) {
+			bindingResult.reject("notMatchNewPW", "새 비밀번호와 확인이 일치하지 않습니다.");
+			return "user/pw_change";
+		}
+
+		userService.updatePassWord(user, pwChangeForm.getNewPassword1());
+
+		// 로그인 페이지에서 보여줄 성공 메시지를 플래시 애트리뷰트로 추가
+		redirectAttributes.addFlashAttribute("successMessage", "비밀번호 변경 성공!");
+
+		return "redirect:/user/mypage";
 	}
 }
