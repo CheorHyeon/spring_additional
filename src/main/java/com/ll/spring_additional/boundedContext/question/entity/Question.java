@@ -13,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.ll.spring_additional.boundedContext.answer.entity.Answer;
+import com.ll.spring_additional.boundedContext.comment.entity.Comment;
 import com.ll.spring_additional.boundedContext.question.questionEnum.QuestionEnum;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 
@@ -29,6 +30,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
@@ -107,5 +109,8 @@ public class Question {
 		}
 	}
 
+	@OneToMany(mappedBy = "question", cascade = {CascadeType.REMOVE})
+	@ToString.Exclude
+	private List<Comment> comments = new ArrayList<>();
 
 }
