@@ -54,7 +54,7 @@
                     <a class="nav-link btn btn-primary text-white" th:href="@{|?sort=createDate&page=${paging.number}|}">최신순</a>
                 </li>
                 <li class="nav-item" th:classappend="${param.sort.equals('voter')} ? 'active'">
-                    <a class="nav-link btn btn-primary text-white" th:href="@{|?sort=voter&page=${paging.number}|}">호감순</a>
+                    <a class="nav-link btn btn-primary text-white" th:href="@{|?sort=voter&page=${paging.number}|}">추천순</a>
                 </li>
             </ul>
         </div>
