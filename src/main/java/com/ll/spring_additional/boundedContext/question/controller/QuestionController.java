@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.ll.spring_additional.boundedContext.answer.entity.Answer;
 import com.ll.spring_additional.boundedContext.answer.form.AnswerForm;
 import com.ll.spring_additional.boundedContext.answer.service.AnswerService;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
@@ -35,7 +36,6 @@ import lombok.RequiredArgsConstructor;
 public class QuestionController {
 	private final QuestionService questionService;
 	private final UserService userService;
-
 	private final AnswerService answerService;
 
 	@GetMapping("/list/{type}")
@@ -97,9 +97,11 @@ public class QuestionController {
 	}
 
 	@GetMapping("/detail/{id}")
-	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm) {
+	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm, @RequestParam(defaultValue = "0") int page) {
 		Question question = questionService.getQuestion(id);
+		Page<Answer> paging = answerService.getAnswerPage(question, page);
 		model.addAttribute("question", question);
+		model.addAttribute("paging", paging);
 		return "question/question_detail";
 	}
 

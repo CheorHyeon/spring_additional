@@ -3,6 +3,9 @@ package com.ll.spring_additional.boundedContext.answer.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,5 +71,11 @@ public class AnswerService {
 
 	public List<Answer> getAnswerTop15Latest() {
 		return answerRepository.findTop15ByOrderByCreateDateDesc();
+	}
+
+	public Page<Answer> getAnswerPage(Question question, int page) {
+		Pageable pageable = PageRequest.of(page, 10); // 페이지네이션 정보
+		return answerRepository.findAllByQuestion(question, pageable);
+
 	}
 }
