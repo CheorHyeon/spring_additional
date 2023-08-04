@@ -43,8 +43,16 @@
         </div>
     </div>
     <!-- 답변의 갯수 표시 -->
+    <div class="d-flex justify-content-between align-items-baseline">
     <h5 class="border-bottom my-3 py-2"
-        th:text="|${#lists.size(question.answerList)}개의 답변이 있습니다.|"></h5>
+        th:text="|${#lists.size(question.answerList)}개의 답변이 있습니다.|">
+    </h5>
+        <div>
+            <span>답변 정렬 :</span>
+            <a class ="btn btn-primary flex-shrink-1" th:classappend="${param.sort==createDate} ? 'active'" th:href="@{|?sort=createDate&page=${paging.number}|}">최신순</a>
+            <a class ="btn btn-primary flex-shrink-1" th:classappend="${param.sort==voter} ? 'active'" th:href="@{|?sort=voter&page=${paging.number}|}">호감순</a>
+        </div>
+    </div>
     <!-- 답변 반복 시작 -->
     <div th:id="|answer_${answer.id}|" class="card my-3" th:each="answer : ${paging}">
         <div class="card-body">
@@ -84,7 +92,7 @@
     </div>
     <!-- 답변 반복 끝  -->
     <!-- 답변 페이징처리 시작 -->
-    <div th:if="${!paging.isEmpty()}" th:with="queryStrBase = '?kw=' + ${param.kw != null ? param.kw : ''}">
+    <div th:if="${!paging.isEmpty()}" th:with="queryStrBase = '?sort=' + ${param.sort != null ? param.sort : ''}">
         <ul class="pagination justify-content-center">
             <li class="page-item" th:classappend="${paging.number==0} ? 'disabled'">
                 <a class="page-link"

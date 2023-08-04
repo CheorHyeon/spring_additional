@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.ll.spring_additional.boundedContext.answer.entity.Answer;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
@@ -19,4 +21,10 @@ public interface AnswerRepository extends JpaRepository<Answer, Integer> {
 	List<Answer> findTop15ByOrderByCreateDateDesc();
 
 	Page<Answer> findAllByQuestion(Question question, Pageable pageable);
+
+	@Query("SELECT e "
+		+ "FROM Answer e "
+		+ "WHERE e.question = :question "
+		+ "ORDER BY SIZE(e.voters) DESC, e.createDate")
+	Page<Answer> findAllByQuestionOrderByVoter(@Param("question") Question question, Pageable pageable);
 }
