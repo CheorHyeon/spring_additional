@@ -48,9 +48,15 @@
         th:text="|${#lists.size(question.answerList)}개의 답변이 있습니다.|">
     </h5>
         <div>
-            <span>답변 정렬 :</span>
-            <a class ="btn btn-primary flex-shrink-1" th:classappend="${param.sort==createDate} ? 'active'" th:href="@{|?sort=createDate&page=${paging.number}|}">최신순</a>
-            <a class ="btn btn-primary flex-shrink-1" th:classappend="${param.sort==voter} ? 'active'" th:href="@{|?sort=voter&page=${paging.number}|}">호감순</a>
+            <ul class="nav d-flex align-items-baseline gap-2">
+                <span>정렬 기준</span>
+                <li class="nav-item" th:classappend="${param.sort.equals('createDate')} ? 'active'">
+                    <a class="nav-link btn btn-primary text-white" th:href="@{|?sort=createDate&page=${paging.number}|}">최신순</a>
+                </li>
+                <li class="nav-item" th:classappend="${param.sort.equals('voter')} ? 'active'">
+                    <a class="nav-link btn btn-primary text-white" th:href="@{|?sort=voter&page=${paging.number}|}">호감순</a>
+                </li>
+            </ul>
         </div>
     </div>
     <!-- 답변 반복 시작 -->
