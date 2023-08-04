@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.ll.spring_additional.boundedContext.answer.entity.Answer;
 import com.ll.spring_additional.boundedContext.answer.form.AnswerForm;
 import com.ll.spring_additional.boundedContext.answer.service.AnswerService;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
@@ -35,11 +36,11 @@ import lombok.RequiredArgsConstructor;
 public class QuestionController {
 	private final QuestionService questionService;
 	private final UserService userService;
-
 	private final AnswerService answerService;
 
 	@GetMapping("/list/{type}")
-	public String list(Model model, @PathVariable String type, @RequestParam(value = "page", defaultValue = "0") int page
+	public String list(Model model, @PathVariable String type,
+		@RequestParam(value = "page", defaultValue = "0") int page
 		, @RequestParam(value = "kw", defaultValue = "") String kw) {
 		int category = switch (type) {
 			case "qna" -> QuestionEnum.QNA.getStatus();
@@ -97,9 +98,12 @@ public class QuestionController {
 	}
 
 	@GetMapping("/detail/{id}")
-	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm) {
+	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm,
+		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "") String sort) {
 		Question question = questionService.getQuestion(id);
+		Page<Answer> paging = answerService.getAnswerPage(question, page, sort);
 		model.addAttribute("question", question);
+		model.addAttribute("paging", paging);
 		return "question/question_detail";
 	}
 
@@ -131,7 +135,8 @@ public class QuestionController {
 
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/create/{type}")
-	public String questionCreate(@Valid QuestionForm questionForm, @PathVariable String type, BindingResult bindingResult, Principal principal) {
+	public String questionCreate(@Valid QuestionForm questionForm, @PathVariable String type,
+		BindingResult bindingResult, Principal principal) {
 		if (bindingResult.hasErrors()) {
 			return "question/question_form";
 		}
@@ -150,14 +155,15 @@ public class QuestionController {
 
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/modify/{id}")
-	public String questionModify(QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal, Model model) {
+	public String questionModify(QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal,
+		Model model) {
 		Question question = questionService.getQuestion(id);
 		if (!question.getAuthor().getUsername().equals(principal.getName())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
 		}
 
 		switch (question.getCategoryAsEnum()) {
-			case QNA-> model.addAttribute("boardName", "질문과답변 수정");
+			case QNA -> model.addAttribute("boardName", "질문과답변 수정");
 			case FREE -> model.addAttribute("boardName", "자유게시판 수정");
 			case BUG -> model.addAttribute("boardName", "버그및건의 수정");
 			default -> throw new RuntimeException("올바르지 않은 접근입니다.");
