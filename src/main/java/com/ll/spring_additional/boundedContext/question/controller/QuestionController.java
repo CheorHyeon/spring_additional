@@ -20,6 +20,8 @@ import org.springframework.web.server.ResponseStatusException;
 import com.ll.spring_additional.boundedContext.answer.entity.Answer;
 import com.ll.spring_additional.boundedContext.answer.form.AnswerForm;
 import com.ll.spring_additional.boundedContext.answer.service.AnswerService;
+import com.ll.spring_additional.boundedContext.comment.entity.Comment;
+import com.ll.spring_additional.boundedContext.comment.service.CommentService;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.question.form.QuestionForm;
 import com.ll.spring_additional.boundedContext.question.questionEnum.QuestionEnum;
@@ -37,6 +39,8 @@ public class QuestionController {
 	private final QuestionService questionService;
 	private final UserService userService;
 	private final AnswerService answerService;
+
+	private final CommentService commentService;
 
 	@GetMapping("/list/{type}")
 	public String list(Model model, @PathVariable String type,
@@ -99,11 +103,13 @@ public class QuestionController {
 
 	@GetMapping("/detail/{id}")
 	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm,
-		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "") String sort) {
+		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "") String sort, @RequestParam(defaultValue = "0") int commentPage) {
 		Question question = questionService.getQuestion(id);
 		Page<Answer> paging = answerService.getAnswerPage(question, page, sort);
 		model.addAttribute("question", question);
 		model.addAttribute("paging", paging);
+		Page<Comment> commentPaging = commentService.getCommentPageByQuestion(commentPage, question);
+		model.addAttribute("commentPaging", commentPaging);
 		return "question/question_detail";
 	}
 
