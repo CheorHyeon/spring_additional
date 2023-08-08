@@ -148,10 +148,10 @@
                 <p class="text-body-tertiary" th:if="${childComment.deleted}"> 삭제된 댓글입니다.</p>
                 <!-- 비밀 댓글 분기 시작, 위 : 로그인 시 대댓글 작성자 or 댓글 작성자 or 질문 작성자 or 관리자일 경우 확인 가능 / 아래 : 로그인 안하면 아에 안보이게-->
                 <div sec:authorize="isAuthenticated()">
-                  <p class="text-lg font-bold" th:if="${childComment.secret and ((childComment.writer.username == #authentication.getPrincipal().getUsername()) or (comment.author.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}"
-                     th:text="${comment.content}"></p>
+                  <p class="text-lg font-bold" th:if="${childComment.secret and ((childComment.writer.username == #authentication.getPrincipal().getUsername()) or (comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}"
+                     th:text="${childComment.content}"></p>
                   <p class="text-lg font-bold"
-                     th:if="${comment.secret and !((comment.writer.username == #authentication.getPrincipal().getUsername()) or (comment.author.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}">
+                     th:if="${childComment.secret and !((childComment.writer.username == #authentication.getPrincipal().getUsername()) or (comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}">
                     비밀 댓글입니다.</p>
                 </div>
                 <div sec:authorize="isAnonymous()">
