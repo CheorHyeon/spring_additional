@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,11 +40,30 @@ public class CommentController {
 	// 디버깅시 활용
 	// private static final Logger logger = LoggerFactory.getLogger(CommentController.class);
 	// 	logger.info("showComment 메서드 호출");
+	@GetMapping("/{type}/{id}")
+	public String showComments(Model model, @ModelAttribute CommentForm commentForm,
+		@RequestParam(defaultValue = "0") int commentPage, @PathVariable String type, @PathVariable Integer id) {
+
+		if (type.equals("question")) {
+			Question question = questionService.getQuestion(id);
+			model.addAttribute("question", question);
+			Page<Comment> commentPaging = commentService.getCommentPageByQuestion(commentPage, question);
+			model.addAttribute("questionCommentPaging", commentPaging);
+			return "comment/question_comment";
+		}
+		else {
+			Answer answer = answerService.getAnswer(id);
+			model.addAttribute("answer", answer);
+			Page<Comment> commentPaging = commentService.getCommentPageByAnswer(commentPage, answer);
+			model.addAttribute("answerCommentPaging", commentPaging);
+			return "comment/answer_comment";
+		}
+	}
 
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/create/{type}")
-	public String create(Model model, @ModelAttribute CommentForm commentForm,
-		@RequestParam(defaultValue = "0") int page, @PathVariable String type, Principal principal, BindingResult bindingResult) {
+	public String create(Model model, @ModelAttribute CommentForm commentForm, @PathVariable String type, Principal principal,
+		BindingResult bindingResult) {
 
 		if (bindingResult.hasErrors()) {
 			return "question/question_detail";
@@ -51,30 +71,30 @@ public class CommentController {
 
 		SiteUser user = userService.getUser(principal.getName());
 		String content = commentForm.getCommentContents().trim();
-		Question question = questionService.getQuestion(commentForm.getQuestionId());;
+		Question question = questionService.getQuestion(commentForm.getQuestionId());
 
 		int lastPage;
 
-		// 부모댓글 생성
-		if(type.equals("question")) {
+		if (type.equals("question")) {
 			Comment comment = commentService.createByQuestion(content, commentForm.getSecret(), user, question);
 			lastPage = commentService.getLastPageNumberByQuestion(question);
-		}
-
-		else {
+			Page<Comment> commentPaging = commentService.getCommentPageByQuestion(lastPage, question);
+			model.addAttribute("questionCommentPaging", commentPaging);
+			model.addAttribute("question", question);
+			return "comment/question_comment :: #question-comment-list";
+		} else {
 			Answer answer = answerService.getAnswer(commentForm.getAnswerId());
 			Comment comment = commentService.createByAnswer(content, commentForm.getSecret(), user, answer);
 			lastPage = commentService.getLastPageNumberByAnswer(answer);
+			return "comment/question_comment";
 		}
-
-		// 앵커 작업 필요
-		return "redirect:/question/detail/" + question.getId();
 	}
 
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/reply/create/{type}")
 	public String replyCreate(Model model, @ModelAttribute CommentForm commentForm,
-		@RequestParam(defaultValue = "0") int page, @PathVariable String type, BindingResult bindingResult, Principal principal) {
+		@RequestParam(defaultValue = "0") int page, @PathVariable String type, BindingResult bindingResult,
+		Principal principal) {
 
 		if (bindingResult.hasErrors()) {
 			return "question/question_detail";
@@ -90,34 +110,34 @@ public class CommentController {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "해당 댓글을 찾을 수 없습니다");
 		}
 
+		model.addAttribute("question", question);
+
 		int lastPage;
 		Page<Comment> paging = null;
 
 		// 자식 댓글 생성
-		if(type.equals("question")) {
-			Comment comment = commentService.createReplyCommentByQuestion(commentForm.getCommentContents(), commentForm.getSecret(), user, question,
+		if (type.equals("question")) {
+			Comment comment = commentService.createReplyCommentByQuestion(commentForm.getCommentContents(),
+				commentForm.getSecret(), user, question,
 				parent);
 			paging = commentService.getCommentPageByQuestion(page, question);
-		}
-
-		else {
+			model.addAttribute("questionCommentPaging", paging);
+			return "comment/question_comment :: #question-comment-list";
+		} else {
 			Answer answer = answerService.getAnswer(commentForm.getAnswerId());
-			Comment comment = commentService.createReplyCommentByAnswer(commentForm.getCommentContents(), commentForm.getSecret(), user, answer, parent);
+			Comment comment = commentService.createReplyCommentByAnswer(commentForm.getCommentContents(),
+				commentForm.getSecret(), user, answer, parent);
 			paging = commentService.getCommentPageByAnswer(page, answer);
+			model.addAttribute("commentPaging", paging);
+			return "comment/answer_comment :: #answer-comment-list";
 		}
-
-		model.addAttribute("question", question);
-
-		model.addAttribute("commentPaging", paging);
-
-		// TODO : Ajax 구현
-		return "comment/comment :: #question-comment-list";
 	}
 
 	// 답글 수정 + 댓글 수정 둘다
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/modify/{type}")
-	public String modify(CommentForm commentForm, Model model, @RequestParam(defaultValue = "0") int page, Principal principal, @PathVariable String type) {
+	public String modify(CommentForm commentForm, Model model, @RequestParam(defaultValue = "0") int page,
+		Principal principal, @PathVariable String type) {
 		Question question = questionService.getQuestion(commentForm.getQuestionId());
 		SiteUser user = userService.getUser(principal.getName());
 
@@ -135,24 +155,23 @@ public class CommentController {
 
 		Page<Comment> paging;
 
-		if(type.equals("question")) {
+		if (type.equals("question")) {
 			paging = commentService.getCommentPageByQuestion(page, question);
-			model.addAttribute("commentPaging", paging);
-			return "comment/comment :: #question-comment-list";
-		}
-
-		else {
+			model.addAttribute("questionCommentPaging", paging);
+			return "comment/question_comment :: #question-comment-list";
+		} else {
 			Answer answer = answerService.getAnswer(commentForm.getAnswerId());
 			paging = commentService.getCommentPageByAnswer(page, answer);
 			model.addAttribute("commentPaging", paging);
-			return "comment/comment :: #answer-comment-list";
+			return "comment/answer_comment :: #answer-comment-list";
 		}
 	}
 
 	// 댓글 삭제 메서드
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/delete/{type}")
-	public String delete(Model model, CommentForm commentForm, @RequestParam(defaultValue = "0") int page, Principal principal, @PathVariable String type) {
+	public String delete(Model model, CommentForm commentForm, @RequestParam(defaultValue = "0") int page,
+		Principal principal, @PathVariable String type) {
 		Question question = questionService.getQuestion(commentForm.getQuestionId());
 		SiteUser user = userService.getUser(principal.getName());
 
@@ -183,17 +202,15 @@ public class CommentController {
 		model.addAttribute("question", question);
 		Page<Comment> paging;
 
-		if(type.equals("question")) {
+		if (type.equals("question")) {
 			paging = commentService.getCommentPageByQuestion(page, question);
-			model.addAttribute("commentPaging", paging);
-			return "comment/comment :: #question-comment-list";
-		}
-
-		else {
+			model.addAttribute("questionCommentPaging", paging);
+			return "comment/question_comment :: #question-comment-list";
+		} else {
 			Answer answer = answerService.getAnswer(commentForm.getAnswerId());
 			paging = commentService.getCommentPageByAnswer(page, answer);
 			model.addAttribute("commentPaging", paging);
-			return "comment/comment :: #answer-comment-list";
+			return "comment/answer_comment :: #answer-comment-list";
 		}
 	}
 }

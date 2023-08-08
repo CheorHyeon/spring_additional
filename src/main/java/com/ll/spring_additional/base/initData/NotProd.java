@@ -61,8 +61,8 @@ public class NotProd {
 				Question question1 = questionService.create("질문입니닷", "질문이에요!", user2, 0);
 				Question question2 = questionService.create("질문입니닷22", "질문이에요!22", user2, 0);
 
-				Answer answer1 = answerService.create(question1, "답변1", user1);
-				Answer answer2 = answerService.create(question1, "답변2", user1);
+				Answer answer1 = answerService.create(question2, "답변1", user1);
+				Answer answer2 = answerService.create(question2, "답변2", user1);
 
 				List<Answer> answerList = new ArrayList<>();
 				for (int i = 1; i <= 300; i++) {
@@ -102,6 +102,23 @@ public class NotProd {
 					.build();
 
 				commentRepository.save(comment1);
+
+				Comment comment3 = Comment.builder()
+					.content("테스트 댓글")
+					.writer(user2)
+					.answer(answer1)
+					.build();
+
+				commentRepository.save(comment3);
+
+				Comment comment4 = Comment.builder()
+					.content("테스트 대댓글")
+					.writer(user2)
+					.answer(answer1)
+					.parent(comment3)
+					.build();
+				commentRepository.save(comment4);
+
 				}
 			};
 	}

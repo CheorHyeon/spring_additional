@@ -1,6 +1,9 @@
 package com.ll.spring_additional.boundedContext.question.controller;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -105,11 +108,14 @@ public class QuestionController {
 	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm,
 		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "") String sort, @RequestParam(defaultValue = "0") int commentPage) {
 		Question question = questionService.getQuestion(id);
-		Page<Answer> paging = answerService.getAnswerPage(question, page, sort);
 		model.addAttribute("question", question);
+
+		Page<Answer> paging = answerService.getAnswerPage(question, page, sort);
 		model.addAttribute("paging", paging);
+
 		Page<Comment> commentPaging = commentService.getCommentPageByQuestion(commentPage, question);
-		model.addAttribute("commentPaging", commentPaging);
+		model.addAttribute("questionCommentPaging", commentPaging);
+
 		return "question/question_detail";
 	}
 

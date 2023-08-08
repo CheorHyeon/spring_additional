@@ -41,16 +41,19 @@
                 </form>
             </div>
         </div>
-        <!-- 댓글 시작 -->
-        <div class="comments">
-            <!-- comment.html Include -->
-            <div layout:include="comment/comment.html"></div>
+        <!-- 질문에 달린 댓글-->
+        <div>
+            <a onclick="showQuestionComment();" href="javascript:void(0);" class="d-flex gap-2" style="margin-left: 1%;">
+                <i class="fa-regular fa-comment-dots" style="color: #94bbff;"></i>
+                <div th:text="|${#lists.size(question.comments)}|" id="q-comment-count"></div>
+                <div>개의 댓글이 있습니다.</div>
+            </a>
+            <div id="q-comment-list" style="display: none;"></div>
         </div>
     </div>
     <!-- 답변의 갯수 표시 -->
     <div class="d-flex justify-content-between align-items-baseline">
-    <h5 class="border-bottom my-3 py-2"
-        th:text="|${#lists.size(question.answerList)}개의 답변이 있습니다.|">
+    <h5 class="border-bottom my-3 py-2" th:text="|${#lists.size(question.answerList)}개의 답변이 있습니다.|">
     </h5>
         <div>
             <ul class="nav d-flex align-items-baseline gap-2">
@@ -100,11 +103,11 @@
                 </form>
             </div>
         </div>
-<!--        &lt;!&ndash; 댓글 시작 &ndash;&gt;-->
-<!--        <div class="comments">-->
-<!--            &lt;!&ndash; comment.html Include &ndash;&gt;-->
-<!--            <div layout:include="comment/comment.html"></div>-->
-<!--        </div>-->
+        <!-- 댓글 시작 -->
+        <div class="comments">
+            <!-- comment.html Include -->
+            <div></div>
+        </div>
     </div>
     <!-- 답변 반복 끝  -->
     <!-- 답변 페이징처리 시작 -->
@@ -193,6 +196,32 @@
                     },
                     success: function (fragment) {
                         $('#questionView').text(fragment);
+                    },
+                    error: function (err) {
+                        console.log("요청 실패", err);
+                    }
+                });
+            }
+        }
+
+        const showQuestionComment = () => {
+            const questionId = [[${question.id}]];
+            const qCommentList = $('#q-comment-list');
+            // 댓글이 이미 표시되어 있다면 숨김
+            if (qCommentList.is(':visible')) {
+                qCommentList.hide();
+            } else {
+                // 댓글이 숨겨져 있을 경우만 Ajax 요청
+                $.ajax({
+                    // 요청방식: get, 요청주소: /comment/question/id
+                    // 요청데이터: 작성내용, 게시글번호, 비밀 댓글 여부, 부모 댓글 id
+                    type: "get",
+                    url: "/comment/question/" + questionId,
+                    data: {
+                    },
+                    success: function (fragment) {
+                        qCommentList.show();
+                        qCommentList.html(fragment);
                     },
                     error: function (err) {
                         console.log("요청 실패", err);

@@ -12,6 +12,9 @@ import com.ll.spring_additional.boundedContext.comment.repository.CommentReposit
 import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -37,7 +40,7 @@ public class CommentService {
 	// 마지막 페이지 번호 가져오기
 	public int getLastPageNumberByQuestion(Question question) {
 		int commentCount = commentRepository.countByQuestion(question);
-		int pageSize = 10; // 페이지 당 댓글 수 (조정 가능)
+		int pageSize = 5; // 페이지 당 댓글 수 (조정 가능)
 		int lastPageNumber = (int)Math.ceil((double)commentCount / pageSize);
 		// 스프링 0페이지 부터 시작하니 1 빼주기
 		// 단 댓글이 1개도 없던 상황일 경우, 댓글이 달린 직후에는 0일테니 -1하면 음수값이 나온다.
@@ -113,7 +116,7 @@ public class CommentService {
 	}
 
 	public Page<Comment> getCommentPageByQuestion(int page, Question question) {
-		Pageable pageable = PageRequest.of(page, 10); // 페이지네이션 정보
+		Pageable pageable = PageRequest.of(page, 5); // 페이지네이션 정보
 		return commentRepository.findAllByQuestion(question, pageable);
 	}
 
@@ -166,4 +169,5 @@ public class CommentService {
 
 		return comment;
 	}
+
 }
