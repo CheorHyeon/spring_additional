@@ -110,7 +110,7 @@
             <a th:data-a-comment-index="${answer.id}" onclick="showAnswerComment(this.getAttribute('data-a-comment-index'));" href="javascript:void(0);" class="d-flex align-items-baseline gap-2" style="margin-left: 1%;">
                 <i class="fa-regular fa-comment-dots" style="color: #94bbff;"></i>
                 <div class="d-flex">
-                    <div class="fw-bold" th:text="|${#lists.size(answer.comments)}|"></div>
+                    <div class="fw-bold" th:text="|${#lists.size(answer.comments)}|" th:id="'a-comment-count-' + ${answer.id}"></div>
                     <div>개의 댓글이 있습니다.</div>
                 </div>
             </a>

@@ -18,14 +18,15 @@
                   style="height: 50px"
                   class="border border-gray-300 rounded-lg textarea-lg w-full
             focus:outline-none focus:ring-2 focus:ring-blue-400 flex-grow-1"></textarea>
-        <button id="comment-write-btn" class="btn btn-primary" onclick="qCommentWrite()">
-          <span>등록</span>
-        </button>
+        <button id="comment-write-btn" class="btn btn-primary" onclick="qCommentWrite()">등록</button>
       </div>
   </div>
 
-  <!-- 댓글 출력 부분, 일단 페이지 접속 했을때 보여지게-->
   <div id="question-comment-list" class="mt-2" style="margin : 10px">
+    <!-- 댓글 개수 갱신용 -->
+    <div id="new_total_question_comments" th:if="${totalCount !=null}" th:text="${totalCount}" style="display: none;"></div>
+    <div th:if="${totalCount ==null}" th:text="${totalCount}"style="display: none;">0</div>
+    <!-- 댓글 출력 부분-->
     <ul>
       <li class="nav-link d-flex flex-column gap-2" th:each="comment : ${questionCommentPaging}" th:if="${comment.parent == null}">
         <div class="card-body bg-white rounded shadow-lg">
@@ -221,7 +222,7 @@
         </ul>
       </li>
     </ul>
-    <!-- 답변 페이징처리 시작 -->
+    <!-- 댓글 페이징처리 시작 -->
     <div th:if="${!questionCommentPaging.isEmpty()}">
       <ul class="pagination justify-content-center">
         <li class="page-item" th:classappend="${questionCommentPaging.number==0} ? 'disabled'">
@@ -345,7 +346,6 @@
       const secretValue = document.getElementById("secret").checked ? true : false;
       const contents = document.getElementById("commentContents").value.trim();
       const questionId = [[${question.id}]];
-      const questionComment = [[${questionCommentPaging.totalElements}]] + 1;
 
       if (contents.length == 0) {
         alert('답글을 입력해주세요');
@@ -369,9 +369,16 @@
           "commentContents": contents
         },
         success: function (fragment) {
+          // 프래그먼트로부터 jQuery 객체를 생성합니다.
+          const $newFragment = $(fragment);
+
+          //프래그먼트로부터 새로운 코멘트 개수를 가져옵니다.
+          const newTotalComments = $newFragment.find('#new_total_question_comments').text();
+
+          // 코멘트 카운트를 업데이트합니다.
+          $('#q-comment-count').text(newTotalComments);
           document.getElementById("commentContents").value = "";
-          document.getElementById("secret").checked=false;
-          $('#q-comment-count').text(questionComment);
+          document.getElementById("secret").checked = false;
           $('#question-comment-list').html(fragment);
         },
         error: function (err) {
@@ -410,6 +417,15 @@
           "parentId": parentId
         },
         success: function (fragment) {
+          // 프래그먼트로부터 jQuery 객체를 생성합니다.
+          const $newFragment = $(fragment);
+
+          //프래그먼트로부터 새로운 코멘트 개수를 가져옵니다.
+          const newTotalComments = $newFragment.find('#new_total_question_comments').text();
+
+          // 코멘트 카운트를 업데이트합니다.
+          $('#q-comment-count').text(newTotalComments);
+
           $('#question-comment-list').html(fragment);
         },
         error: function (err) {
@@ -484,8 +500,15 @@
           "page": currentPage
         },
         success: function (fragment) {
+          // 프래그먼트로부터 jQuery 객체를 생성합니다.
+          const $newFragment = $(fragment);
+
+          //프래그먼트로부터 새로운 코멘트 개수를 가져옵니다.
+          const newTotalComments = $newFragment.find('#new_total_question_comments').text();
+
+          // 코멘트 카운트를 업데이트합니다.
+          $('#q-comment-count').text(newTotalComments);
           $('#question-comment-list').html(fragment);
-          alert('댓글이 삭제되었습니다');
         },
         error: function (err) {
           console.log("요청 실패", err);
@@ -563,8 +586,15 @@
           "id": commentId
         },
         success: function (fragment) {
+          // 프래그먼트로부터 jQuery 객체를 생성합니다.
+          const $newFragment = $(fragment);
+
+          //프래그먼트로부터 새로운 코멘트 개수를 가져옵니다.
+          const newTotalComments = $newFragment.find('#new_total_question_comments').text();
+
+          // 코멘트 카운트를 업데이트합니다.
+          $('#q-comment-count').text(newTotalComments);
           $('#question-comment-list').html(fragment);
-          alert('답글이 삭제되었습니다');
         },
         error: function (err) {
           console.log("요청 실패", err);

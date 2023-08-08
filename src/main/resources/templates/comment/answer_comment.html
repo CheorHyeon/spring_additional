@@ -1,32 +1,34 @@
 <main>
 <!-- 댓글 작성 부분 -->
   <div id="answer-write" class="d-flex flex-column gap-2 card-body bg-white rounded shadow-lg gap-2" style="margin : 10px">
-    <form th:action="@{|/comment/create/answer|}" method="POST" onsubmit="Answer_CommentForm__submit(this); return false;">
       <div class="d-flex justify-content-left">
         <div class="label d-flex" style="cursor:pointer;">
           <label class="label gap-2 form-check form-switch">
-            <input type="checkbox" name="secret" class="form-check-input"/>
+            <input type="checkbox" name="secret" id="aSecret" class="form-check-input"/>
             <i class="fa-solid fa-lock"></i>
             <span class="label-text font-semibold">비밀댓글</span>
           </label>
         </div>
       </div>
       <div class="d-flex">
-        <textarea sec:authorize="isAuthenticated()" name="commentContents" placeholder="댓글을 입력해주세요." id="commentContents"
+        <textarea sec:authorize="isAuthenticated()" name="commentContents" placeholder="댓글을 입력해주세요." id="aCommentContents"
                   style="height: 50px"
                   class="border border-gray-300 flex-grow-1"></textarea>
         <textarea sec:authorize="isAnonymous()" disabled placeholder="로그인 후 댓글 작성이 가능합니다."
                   style="height: 50px"
                   class="border border-gray-300 flex-grow-1"></textarea>
-        <button class="btn btn-primary">등록</button>
+        <button class="btn btn-primary" onclick="aCommentWrite()">등록</button>
       </div>
     </form>
   </div>
 
-  <!-- 댓글 출력 부분, 일단 페이지 접속 했을때 보여지게-->
+  <!-- 댓글 출력 부분-->
   <div id="answer-comment-list" class="mt-2" style="margin : 10px">
+    <!-- 댓글 개수 갱신용 -->
+    <div id="new_total_answer_comments" th:if="${totalCount !=null}" th:text="${totalCount}" style="display: none;"></div>
+    <div th:if="${totalCount ==null}" th:text="${totalCount}"style="display: none;">0</div>
     <ul>
-      <li class="nav-link d-flex flex-column gap-2" th:each="comment : ${answer.comments}" th:if="${comment.parent == null}">
+      <li class="nav-link d-flex flex-column gap-2" th:each="comment : ${answerCommentPaging}" th:if="${comment.parent == null}">
         <div class="card-body bg-white rounded shadow-lg">
           <a th:id="|answer_comment_${comment.id}|"></a>
           <div class="d-flex align-items-baseline gap-2">
@@ -220,6 +222,42 @@
         </ul>
       </li>
     </ul>
+    <!-- 댓글 페이징처리 시작 -->
+    <div th:if="${!answerCommentPaging.isEmpty()}">
+      <ul class="pagination justify-content-center">
+        <li class="page-item" th:classappend="${answerCommentPaging.number==0} ? 'disabled'">
+          <a class="page-link" href="javascript:void(0);" onclick="changeAnswerCommentPage(0)">
+            <span>처음</span>
+          </a>
+        </li>
+        <li class="page-item" th:classappend="${!answerCommentPaging.hasPrevious} ? 'disabled'">
+          <a class="page-link" href="javascript:void(0);"
+             th:data-aCommentPage="${answerCommentPaging.number-1}" onclick="changeAnswerCommentPage(this.getAttribute('data-aCommentPage'))">
+            <span>이전</span>
+          </a>
+        </li>
+        <li th:each="page: ${#numbers.sequence(0, answerCommentPaging.totalPages-1)}"
+            th:if="${page >= answerCommentPaging.number-5 and page <= answerCommentPaging.number+5}"
+            th:classappend="${page == answerCommentPaging.number} ? 'active'"
+            class="page-item">
+          <a th:text="${page}" class="page-link" href="javascript:void(0);"  th:data-aCommentPage="${page}"
+             onclick="changeAnswerCommentPage(this.getAttribute('data-aCommentPage'))"></a>
+        </li>
+        <li class="page-item" th:classappend="${!answerCommentPaging.hasNext} ? 'disabled'">
+          <a class="page-link" href="javascript:void(0);" th:data-aCommentPage="${answerCommentPaging.number+1}"
+             onclick="changeAnswerCommentPage(this.getAttribute('data-aCommentPage'))">
+            <span>다음</span>
+          </a>
+        </li>
+        <li class="page-item" th:classappend="${answerCommentPaging.number==(answerCommentPaging.totalPages-1)} ? 'disabled'">
+          <a class="page-link" href="javascript:void(0);" th:data-aCommentPage="${answerCommentPaging.totalPages-1}"
+             onclick="changeAnswerCommentPage(this.getAttribute('data-aCommentPage'))">
+            <span>끝</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <!-- 페이징처리 끝 -->
 
   <!-- 스크립트는 main 태그 안족에, 타임리프 레이아웃에 의해 body 밖은 무시됨-->
 
@@ -302,11 +340,60 @@
 
     }
 
+    // 댓글 작성 메서드
+    const aCommentWrite = () => {
+      const secretValue = document.getElementById("aSecret").checked ? true : false;
+      const contents = document.getElementById("aCommentContents").value.trim();
+      const questionId = [[${question.id}]];
+      const answerId = [[${answer.id}]];
+
+      if (contents.length == 0) {
+        alert('답글을 입력해주세요');
+        return;
+      }
+
+      var header = $("meta[name='_csrf_header']").attr('content');
+      var token = $("meta[name='_csrf']").attr('content');
+
+      $.ajax({
+        // 요청방식: post, 요청주소: /comment/create/question
+        // 요청데이터: 작성내용, 게시글번호, 비밀 댓글 여부, 부모 댓글 id
+        type: "post",
+        url: "/comment/create/answer",
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader(header, token);
+        },
+        data: {
+          "questionId": questionId,
+          "answerId" : answerId,
+          "secret": secretValue,
+          "commentContents": contents
+        },
+        success: function (fragment) {
+          document.getElementById("aCommentContents").value = "";
+          document.getElementById("aSecret").checked=false;
+
+          // 프래그먼트로부터 jQuery 객체를 생성합니다.
+          const $newFragment = $(fragment);
+
+          //프래그먼트로부터 새로운 코멘트 개수를 가져옵니다.
+          const newTotalComments = $newFragment.find('#new_total_answer_comments').text();
+
+          // 코멘트 카운트를 업데이트합니다.
+          $(`#a-comment-count-${answerId}`).text(newTotalComments);
+          $('#answer-comment-list').html(fragment);
+        },
+        error: function (err) {
+          console.log("요청 실패", err);
+        }
+      });
+    }
+
     // 답글(대댓글) 작성 메서드
     const answerReplyCommentWrite = (commentIndex) => {
-      const replySecret = document.getElementById("replySecret-" + commentIndex);
-      const secretValue = replySecret.checked ? true : false;
+      const secretValue =  document.getElementById("replySecret-" + commentIndex).checked ? true : false;
       const contents = document.getElementById("replyCommentContents-" + commentIndex).value.trim();
+      const answerId = [[${answer.id}]];
       const questionId = [[${question.id}]];
 
       if (contents.length == 0) {
@@ -327,14 +414,23 @@
           xhr.setRequestHeader(header, token);
         },
         data: {
-          "questionId": questionId,
+          "questionId" : questionId,
+          "answerId": answerId,
           "secret": secretValue,
           "commentContents": contents,
           "parentId": parentId
         },
         success: function (fragment) {
+          // 프래그먼트로부터 jQuery 객체를 생성합니다.
+          const $newFragment = $(fragment);
+
+          //프래그먼트로부터 새로운 코멘트 개수를 가져옵니다.
+          const newTotalComments = $newFragment.find('#new_total_answer_comments').text();
+
+          // 코멘트 카운트를 업데이트합니다.
+          $(`#a-comment-count-${answerId}`).text(newTotalComments);
+
           $('#answer-comment-list').html(fragment);
-          alert('답글이 작성되었습니다');
         },
         error: function (err) {
           console.log("요청 실패", err);
@@ -343,11 +439,10 @@
     }
     // 댓글 수정 메서드
     const answerModifyCommentWrite = (commentIndex) => {
-      const replySecret = document.getElementById("modify-secret-" + commentIndex);
-      const secretValue = replySecret.checked ? true : false; // 비밀 댓글 체크 여부
+      const secretValue = document.getElementById("modify-secret-" + commentIndex).checked ? true : false; // 비밀 댓글 체크 여부
       const contents = document.getElementById("modify-comment-contents-" + commentIndex).value.trim();
-      ; // 내용
       const questionId = [[${question.id}]];
+      const answerId = [[${answer.id}]];
 
       if (contents.length == 0) {
         alert('댓글을 입력해주세요');
@@ -372,6 +467,7 @@
           xhr.setRequestHeader(header, token);
         },
         data: {
+          "answerId":answerId,
           "questionId": questionId,
           "secret": secretValue,
           "commentContents": contents,
@@ -392,7 +488,7 @@
       const questionId = [[${question.id}]];
       const commentId = document.getElementById("comment-" + commentIndex).value; // 댓글번호
       const writerId = document.getElementById("writer-" + commentIndex).value; // 작성자 ID
-      const currentPage = [[${answerCommentPaging.number}]];
+      const answerId = [[${answer.id}]];
       var header = $("meta[name='_csrf_header']").attr('content');
       var token = $("meta[name='_csrf']").attr('content');
 
@@ -406,12 +502,21 @@
         },
         data: {
           "questionId": questionId,
+          "answerId" : answerId,
           "commentWriter": writerId,
           "id": commentId
         },
         success: function (fragment) {
+          // 프래그먼트로부터 jQuery 객체를 생성합니다.
+          const $newFragment = $(fragment);
+
+          //프래그먼트로부터 새로운 코멘트 개수를 가져옵니다.
+          const newTotalComments = $newFragment.find('#new_total_answer_comments').text();
+
+          // 코멘트 카운트를 업데이트합니다.
+          $(`#a-comment-count-${answerId}`).text(newTotalComments);
+
           $('#answer-comment-list').html(fragment);
-          alert('댓글이 삭제되었습니다');
         },
         error: function (err) {
           console.log("요청 실패", err);
@@ -421,11 +526,10 @@
 
     // 답글(대댓글) 수정 메서드
     const answerModifyReplyCommentWrite = (childIndex) => {
-      const replySecret = document.getElementById("modify-reply-secret-" + childIndex);
-      const secretValue = replySecret.checked ? true : false; // 비밀 댓글 체크 여부
+      const secretValue = document.getElementById("modify-reply-secret-" + childIndex).checked ? true : false; // 비밀 댓글 체크 여부
       const contents = document.getElementById("modify-reply-comment-contents-" + childIndex).value.trim();
-      ; // 내용
       const questionId = [[${question.id}]];
+      const answerId = [[${answer.id}]];
       const writerId = document.getElementById("modify-reply-writer-" + childIndex).value; // 작성자 ID
       const commentId = document.getElementById("modify-reply-comment-" + childIndex).value; // 댓글번호
       if (contents.length == 0) {
@@ -449,6 +553,7 @@
         },
         data: {
           "questionId": questionId,
+          "answerId" : answerId,
           "secret": secretValue,
           "commentContents": contents,
           "commentWriter": writerId,
@@ -466,6 +571,7 @@
     //답글(대댓글) 삭제 메서드
     const answerDeleteReplyComment = (childIndex) => {
       const questionId = [[${question.id}]];
+      const answerId = [[${answer.id}]];
       const writerId = document.getElementById("modify-reply-writer-" + childIndex).value; // 작성자 ID
       const commentId = document.getElementById("modify-reply-comment-" + childIndex).value; // 댓글번호
 
@@ -483,12 +589,35 @@
         },
         data: {
           "questionId": questionId,
+          "answerId" : answerId,
           "commentWriter": writerId,
           "id": commentId
         },
         success: function (fragment) {
           $('#answer-comment-list').html(fragment);
-          alert('답글이 삭제되었습니다');
+
+        },
+        error: function (err) {
+          console.log("요청 실패", err);
+        }
+      });
+    }
+
+    // 답변 댓글 페이지 이동
+    const changeAnswerCommentPage = (aCommentPage) => {
+      const questionId = [[${question.id}]];
+      const answerId = [[${answer.id}]];
+      $.ajax({
+        // 요청방식: get, 요청주소: /comment/qyestion/questionId
+        // 요청데이터: 작성내용, 게시글번호, 비밀 댓글 여부, 부모 댓글 id
+        type: "get",
+        url: "/comment/answer/" + answerId,
+        data: {
+          "commentPage": aCommentPage,
+          "questionId" : questionId
+        },
+        success: function (fragment) {
+          $(`#a-comment-list-${answerId}`).html(fragment);
         },
         error: function (err) {
           console.log("요청 실패", err);

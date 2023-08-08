@@ -40,7 +40,7 @@ public class CommentController {
 
 	@GetMapping("/{type}/{id}")
 	public String showComments(Model model, @ModelAttribute CommentForm commentForm,
-		@RequestParam(defaultValue = "0") int commentPage, @PathVariable String type, @PathVariable Integer id, @RequestParam(required = false) int questionId) {
+		@RequestParam(defaultValue = "0") Integer commentPage, @PathVariable String type, @PathVariable Integer id, @RequestParam(required = false) Integer questionId) {
 
 		Question question;
 		if (type.equals("question")) {
@@ -48,6 +48,7 @@ public class CommentController {
 			model.addAttribute("question", question);
 			Page<Comment> commentPaging = commentService.getCommentPageByQuestion(commentPage, question);
 			model.addAttribute("questionCommentPaging", commentPaging);
+			model.addAttribute("totalCount", commentPaging.getTotalElements());
 			return "comment/question_comment";
 		}
 		else {
@@ -57,6 +58,7 @@ public class CommentController {
 			model.addAttribute("answer", answer);
 			Page<Comment> commentPaging = commentService.getCommentPageByAnswer(commentPage, answer);
 			model.addAttribute("answerCommentPaging", commentPaging);
+			model.addAttribute("totalCount", commentPaging.getTotalElements());
 			return "comment/answer_comment";
 		}
 	}
@@ -82,12 +84,18 @@ public class CommentController {
 			Page<Comment> commentPaging = commentService.getCommentPageByQuestion(lastPage, question);
 			model.addAttribute("questionCommentPaging", commentPaging);
 			model.addAttribute("question", question);
+			model.addAttribute("totalCount", commentPaging.getTotalElements());
 			return "comment/question_comment :: #question-comment-list";
 		} else {
 			Answer answer = answerService.getAnswer(commentForm.getAnswerId());
 			Comment comment = commentService.createByAnswer(content, commentForm.getSecret(), user, answer);
 			lastPage = commentService.getLastPageNumberByAnswer(answer);
-			return "comment/question_comment";
+			Page<Comment> commentPaging = commentService.getCommentPageByAnswer(lastPage, answer);
+			model.addAttribute("answerCommentPaging", commentPaging);
+			model.addAttribute("question", question);
+			model.addAttribute("answer", answer);
+			model.addAttribute("totalCount", commentPaging.getTotalElements());
+			return "comment/answer_comment :: #answer-comment-list";
 		}
 	}
 
@@ -119,16 +127,24 @@ public class CommentController {
 		if (type.equals("question")) {
 			Comment comment = commentService.createReplyCommentByQuestion(commentForm.getCommentContents(),
 				commentForm.getSecret(), user, question, parent);
-			page = commentService.getPageNumberByQuestion(question, comment, PAGESIZE);
+			// 부모 댓글이 있는 페이지로 가야하므로
+			page = commentService.getPageNumberByQuestion(question, parent, PAGESIZE);
 			paging = commentService.getCommentPageByQuestion(page, question);
 			model.addAttribute("questionCommentPaging", paging);
+			// 전체 댓글 수 갱신
+			model.addAttribute("totalCount", paging.getTotalElements());
 			return "comment/question_comment :: #question-comment-list";
 		} else {
 			Answer answer = answerService.getAnswer(commentForm.getAnswerId());
+			model.addAttribute("answer", answer);
 			Comment comment = commentService.createReplyCommentByAnswer(commentForm.getCommentContents(),
 				commentForm.getSecret(), user, answer, parent);
+			// 부모 댓글이 있는 페이지로 가야하므로
+			page = commentService.getPageNumberByAnswer(answer, parent, PAGESIZE);
 			paging = commentService.getCommentPageByAnswer(page, answer);
-			model.addAttribute("commentPaging", paging);
+			model.addAttribute("answerCommentPaging", paging);
+			// 전체 댓글 수 갱신
+			model.addAttribute("totalCount", paging.getTotalElements());
 			return "comment/answer_comment :: #answer-comment-list";
 		}
 	}
@@ -161,9 +177,11 @@ public class CommentController {
 			model.addAttribute("questionCommentPaging", paging);
 			return "comment/question_comment :: #question-comment-list";
 		} else {
-			// Answer answer = answerService.getAnswer(commentForm.getAnswerId());
-			// paging = commentService.getCommentPageByAnswer(page, answer);
-			// model.addAttribute("commentPaging", paging);
+			Answer answer = answerService.getAnswer(commentForm.getAnswerId());
+			model.addAttribute("answer", answer);
+			page = commentService.getPageNumberByAnswer(answer, comment, PAGESIZE);
+			paging = commentService.getCommentPageByAnswer(page, answer);
+			model.addAttribute("answerCommentPaging", paging);
 			return "comment/answer_comment :: #answer-comment-list";
 		}
 	}
@@ -181,8 +199,20 @@ public class CommentController {
 		}
 
 		Comment comment = commentService.getComment(commentForm.getId());
+
+
 		// 댓글이 속한 페이지 번호
-		int page = commentService.getPageNumberByQuestion(question, comment, PAGESIZE);
+		int page = 0;
+
+		Answer answer = null;
+		if (type.equals("question")) {
+			page = commentService.getPageNumberByQuestion(question, comment, PAGESIZE);
+		}
+
+		else {
+			answer = answerService.getAnswer(commentForm.getAnswerId());
+			commentService.getPageNumberByAnswer(answer, comment, PAGESIZE);
+		}
 
 		// 부모(댓글)이 있을 경우 연관관계 끊어주기 -> 삭제되더라도 GET 등으로 새로 요청을 보내는 것이 아니기에
 		// 이 작업은 꼭 해줘야 대댓글 리스트도 수정된다!
@@ -208,11 +238,15 @@ public class CommentController {
 		if (type.equals("question")) {
 			paging = commentService.getCommentPageByQuestion(page, question);
 			model.addAttribute("questionCommentPaging", paging);
+			// 전체 댓글 수 갱신
+			model.addAttribute("totalCount", paging.getTotalElements());
 			return "comment/question_comment :: #question-comment-list";
 		} else {
-			Answer answer = answerService.getAnswer(commentForm.getAnswerId());
 			paging = commentService.getCommentPageByAnswer(page, answer);
-			model.addAttribute("commentPaging", paging);
+			model.addAttribute("answer", answer);
+			model.addAttribute("answerCommentPaging", paging);
+			// 전체 댓글 수 갱신
+			model.addAttribute("totalCount", paging.getTotalElements());
 			return "comment/answer_comment :: #answer-comment-list";
 		}
 	}

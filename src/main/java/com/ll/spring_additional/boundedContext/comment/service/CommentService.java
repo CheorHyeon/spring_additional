@@ -121,7 +121,7 @@ public class CommentService {
 	}
 
 	public Page<Comment> getCommentPageByAnswer(int page, Answer answer) {
-		Pageable pageable = PageRequest.of(page, 10); // 페이지네이션 정보
+		Pageable pageable = PageRequest.of(page, 5); // 페이지네이션 정보
 		return commentRepository.findAllByAnswer(answer, pageable);
 	}
 
@@ -181,4 +181,14 @@ public class CommentService {
 		return index / pageSize;
 	}
 
+	public int getPageNumberByAnswer(Answer answer, Comment parent, int pageSize) {
+		List<Comment> commentList = answer.getComments();
+		int index = commentList.indexOf(parent);
+
+		if (index == -1) {
+			throw new IllegalArgumentException("해당 댓글이 존재하지 않습니다.");
+		}
+
+		return index / pageSize;
+	}
 }
