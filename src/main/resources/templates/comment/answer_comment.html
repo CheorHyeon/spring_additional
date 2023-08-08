@@ -2,8 +2,6 @@
 <!-- 댓글 작성 부분 -->
   <div id="answer-write" class="d-flex flex-column gap-2 card-body bg-white rounded shadow-lg gap-2" style="margin : 10px">
     <form th:action="@{|/comment/create/answer|}" method="POST" onsubmit="Answer_CommentForm__submit(this); return false;">
-      <input type="hidden" name="questionId" th:value="${answer.question.id}">
-      <input type="hidden" name="answerId" th:value="${answer.id}">
       <div class="d-flex justify-content-left">
         <div class="label d-flex" style="cursor:pointer;">
           <label class="label gap-2 form-check form-switch">
@@ -394,7 +392,7 @@
       const questionId = [[${question.id}]];
       const commentId = document.getElementById("comment-" + commentIndex).value; // 댓글번호
       const writerId = document.getElementById("writer-" + commentIndex).value; // 작성자 ID
-      const currentPage = [[${paging.number}]];
+      const currentPage = [[${answerCommentPaging.number}]];
       var header = $("meta[name='_csrf_header']").attr('content');
       var token = $("meta[name='_csrf']").attr('content');
 

@@ -40,16 +40,19 @@ public class CommentController {
 
 	@GetMapping("/{type}/{id}")
 	public String showComments(Model model, @ModelAttribute CommentForm commentForm,
-		@RequestParam(defaultValue = "0") int commentPage, @PathVariable String type, @PathVariable Integer id) {
+		@RequestParam(defaultValue = "0") int commentPage, @PathVariable String type, @PathVariable Integer id, @RequestParam(required = false) int questionId) {
 
+		Question question;
 		if (type.equals("question")) {
-			Question question = questionService.getQuestion(id);
+			question= questionService.getQuestion(id);
 			model.addAttribute("question", question);
 			Page<Comment> commentPaging = commentService.getCommentPageByQuestion(commentPage, question);
 			model.addAttribute("questionCommentPaging", commentPaging);
 			return "comment/question_comment";
 		}
 		else {
+			question= questionService.getQuestion(questionId);
+			model.addAttribute("question", question);
 			Answer answer = answerService.getAnswer(id);
 			model.addAttribute("answer", answer);
 			Page<Comment> commentPaging = commentService.getCommentPageByAnswer(commentPage, answer);
