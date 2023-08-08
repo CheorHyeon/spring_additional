@@ -53,9 +53,15 @@
     - 비밀번호 변경
     - [PR 바로가기](https://github.com/CheorHyeon/spring_additional/pull/13)
   - [ ] 소셜 로그인(카카오, 구글)
-  - [ ] 답변 페이징, 정렬
-  - [ ] 댓글
-
+  - [x] 답변 페이징, 정렬
+    - 답변 페이징
+    - 정렬 기준 선택 가능
+    - [PR 바로가기](https://github.com/CheorHyeon/spring_additional/pull/15)
+  - [x] 댓글
+    - 댓글, 대댓글, 비밀댓글 구현
+    - 관리자의 경우 모든 댓글 수정, 삭제, 조회 가능
+    - 전체 기능 Ajax로 구현
+    - [PR 바로가기](https://github.com/CheorHyeon/spring_additional/pull/17)
 <br>
 
 ## 프로젝트 결과물
