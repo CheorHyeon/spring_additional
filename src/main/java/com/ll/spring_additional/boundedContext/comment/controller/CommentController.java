@@ -36,6 +36,7 @@ public class CommentController {
 	private final QuestionService questionService;
 	private final AnswerService answerService;
 	private final UserService userService;
+	private final int PAGESIZE = 5;
 
 	@GetMapping("/{type}/{id}")
 	public String showComments(Model model, @ModelAttribute CommentForm commentForm,
@@ -152,7 +153,7 @@ public class CommentController {
 		int page=0;
 
 		if (type.equals("question")) {
-			page = commentService.getPageNumberByQuestion(question, comment, 5);
+			page = commentService.getPageNumberByQuestion(question, comment, PAGESIZE);
 			paging = commentService.getCommentPageByQuestion(page, question);
 			model.addAttribute("questionCommentPaging", paging);
 			return "comment/question_comment :: #question-comment-list";
@@ -167,8 +168,7 @@ public class CommentController {
 	// 댓글 삭제 메서드
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/delete/{type}")
-	public String delete(Model model, CommentForm commentForm, @RequestParam(defaultValue = "0") int page,
-		Principal principal, @PathVariable String type) {
+	public String delete(Model model, CommentForm commentForm, Principal principal, @PathVariable String type) {
 		Question question = questionService.getQuestion(commentForm.getQuestionId());
 		SiteUser user = userService.getUser(principal.getName());
 
@@ -178,6 +178,9 @@ public class CommentController {
 		}
 
 		Comment comment = commentService.getComment(commentForm.getId());
+		// 댓글이 속한 페이지 번호
+		int page = commentService.getPageNumberByQuestion(question, comment, PAGESIZE);
+
 		// 부모(댓글)이 있을 경우 연관관계 끊어주기 -> 삭제되더라도 GET 등으로 새로 요청을 보내는 것이 아니기에
 		// 이 작업은 꼭 해줘야 대댓글 리스트도 수정된다!
 
