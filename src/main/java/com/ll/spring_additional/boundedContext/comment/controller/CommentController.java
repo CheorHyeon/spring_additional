@@ -90,8 +90,7 @@ public class CommentController {
 
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/reply/create/{type}")
-	public String replyCreate(Model model, @ModelAttribute CommentForm commentForm,
-		@RequestParam(defaultValue = "0") int page, @PathVariable String type, BindingResult bindingResult,
+	public String replyCreate(Model model, @ModelAttribute CommentForm commentForm, @PathVariable String type, BindingResult bindingResult,
 		Principal principal) {
 
 		if (bindingResult.hasErrors()) {
@@ -110,13 +109,14 @@ public class CommentController {
 
 		model.addAttribute("question", question);
 
-		int lastPage;
+		int page=0;
 		Page<Comment> paging;
 
 		// 자식 댓글 생성
 		if (type.equals("question")) {
 			Comment comment = commentService.createReplyCommentByQuestion(commentForm.getCommentContents(),
 				commentForm.getSecret(), user, question, parent);
+			page = commentService.getPageNumberByQuestion(question, comment, PAGESIZE);
 			paging = commentService.getCommentPageByQuestion(page, question);
 			model.addAttribute("questionCommentPaging", paging);
 			return "comment/question_comment :: #question-comment-list";

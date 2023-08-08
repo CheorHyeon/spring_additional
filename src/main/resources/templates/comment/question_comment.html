@@ -385,7 +385,6 @@
       const secretValue = document.getElementById("replySecret-" + commentIndex).checked ? true : false;
       const contents = document.getElementById("replyCommentContents-" + commentIndex).value.trim();
       const questionId = [[${question.id}]];
-      const currentPage = [[${questionCommentPaging.number}]];
 
       if (contents.length == 0) {
         alert('답글을 입력해주세요');
@@ -408,8 +407,7 @@
           "questionId": questionId,
           "secret": secretValue,
           "commentContents": contents,
-          "parentId": parentId,
-          "page": currentPage
+          "parentId": parentId
         },
         success: function (fragment) {
           $('#question-comment-list').html(fragment);
