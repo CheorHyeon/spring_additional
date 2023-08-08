@@ -170,4 +170,15 @@ public class CommentService {
 		return comment;
 	}
 
+	public int getPageNumberByQuestion(Question question, Comment comment, int pageSize) {
+		List<Comment> commentList = question.getComments();
+		int index = commentList.indexOf(comment);
+
+		if (index == -1) {
+			throw new IllegalArgumentException("해당 댓글이 존재하지 않습니다.");
+		}
+
+		return index / pageSize;
+	}
+
 }

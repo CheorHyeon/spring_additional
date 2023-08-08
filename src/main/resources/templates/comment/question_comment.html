@@ -382,8 +382,7 @@
 
     // 답글(대댓글) 작성 메서드
     const replyCommentWrite = (commentIndex) => {
-      const replySecret = document.getElementById("replySecret-" + commentIndex);
-      const secretValue = replySecret.checked ? true : false;
+      const secretValue = document.getElementById("replySecret-" + commentIndex).checked ? true : false;
       const contents = document.getElementById("replyCommentContents-" + commentIndex).value.trim();
       const questionId = [[${question.id}]];
       const currentPage = [[${questionCommentPaging.number}]];
@@ -413,9 +412,7 @@
           "page": currentPage
         },
         success: function (fragment) {
-          console.log(fragment); // 여기 추가
           $('#question-comment-list').html(fragment);
-          alert('답글이 작성되었습니다');
         },
         error: function (err) {
           console.log("요청 실패", err);
@@ -424,10 +421,8 @@
     }
     // 댓글 수정 메서드
     const modifyCommentWrite = (commentIndex) => {
-      const replySecret = document.getElementById("modify-secret-" + commentIndex);
-      const secretValue = replySecret.checked ? true : false; // 비밀 댓글 체크 여부
+      const secretValue = document.getElementById("modify-secret-" + commentIndex).checked ? true : false; // 비밀 댓글 체크 여부
       const contents = document.getElementById("modify-comment-contents-" + commentIndex).value.trim();
-      ; // 내용
       const questionId = [[${question.id}]];
       const currentPage = [[${questionCommentPaging.number}]];
 
@@ -441,9 +436,6 @@
 
       var header = $("meta[name='_csrf_header']").attr('content');
       var token = $("meta[name='_csrf']").attr('content');
-      //게시글 번호
-      console.log("비밀여부: ", secretValue);
-      console.log("내용: ", contents);
 
       $.ajax({
         // 요청방식: post, 요청주소: /comment/reply/create

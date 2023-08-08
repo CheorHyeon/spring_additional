@@ -37,9 +37,6 @@ public class CommentController {
 	private final AnswerService answerService;
 	private final UserService userService;
 
-	// 디버깅시 활용
-	// private static final Logger logger = LoggerFactory.getLogger(CommentController.class);
-	// 	logger.info("showComment 메서드 호출");
 	@GetMapping("/{type}/{id}")
 	public String showComments(Model model, @ModelAttribute CommentForm commentForm,
 		@RequestParam(defaultValue = "0") int commentPage, @PathVariable String type, @PathVariable Integer id) {
@@ -113,13 +110,12 @@ public class CommentController {
 		model.addAttribute("question", question);
 
 		int lastPage;
-		Page<Comment> paging = null;
+		Page<Comment> paging;
 
 		// 자식 댓글 생성
 		if (type.equals("question")) {
 			Comment comment = commentService.createReplyCommentByQuestion(commentForm.getCommentContents(),
-				commentForm.getSecret(), user, question,
-				parent);
+				commentForm.getSecret(), user, question, parent);
 			paging = commentService.getCommentPageByQuestion(page, question);
 			model.addAttribute("questionCommentPaging", paging);
 			return "comment/question_comment :: #question-comment-list";
@@ -136,8 +132,7 @@ public class CommentController {
 	// 답글 수정 + 댓글 수정 둘다
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/modify/{type}")
-	public String modify(CommentForm commentForm, Model model, @RequestParam(defaultValue = "0") int page,
-		Principal principal, @PathVariable String type) {
+	public String modify(CommentForm commentForm, Model model, Principal principal, @PathVariable String type) {
 		Question question = questionService.getQuestion(commentForm.getQuestionId());
 		SiteUser user = userService.getUser(principal.getName());
 
@@ -154,15 +149,17 @@ public class CommentController {
 		model.addAttribute("question", question);
 
 		Page<Comment> paging;
+		int page=0;
 
 		if (type.equals("question")) {
+			page = commentService.getPageNumberByQuestion(question, comment, 5);
 			paging = commentService.getCommentPageByQuestion(page, question);
 			model.addAttribute("questionCommentPaging", paging);
 			return "comment/question_comment :: #question-comment-list";
 		} else {
-			Answer answer = answerService.getAnswer(commentForm.getAnswerId());
-			paging = commentService.getCommentPageByAnswer(page, answer);
-			model.addAttribute("commentPaging", paging);
+			// Answer answer = answerService.getAnswer(commentForm.getAnswerId());
+			// paging = commentService.getCommentPageByAnswer(page, answer);
+			// model.addAttribute("commentPaging", paging);
 			return "comment/answer_comment :: #answer-comment-list";
 		}
 	}
