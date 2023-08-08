@@ -127,8 +127,8 @@ public class CommentController {
 		if (type.equals("question")) {
 			Comment comment = commentService.createReplyCommentByQuestion(commentForm.getCommentContents(),
 				commentForm.getSecret(), user, question, parent);
-			// 부모 댓글이 있는 페이지로 가야하므로
-			page = commentService.getPageNumberByQuestion(question, parent, PAGESIZE);
+			// 부모 댓글이 있는 페이지로 가야하므로, 부모의 페이지를 구해옴
+			page = commentService.getPageNumberByQuestion(question, comment, PAGESIZE);
 			paging = commentService.getCommentPageByQuestion(page, question);
 			model.addAttribute("questionCommentPaging", paging);
 			// 전체 댓글 수 갱신
@@ -139,8 +139,8 @@ public class CommentController {
 			model.addAttribute("answer", answer);
 			Comment comment = commentService.createReplyCommentByAnswer(commentForm.getCommentContents(),
 				commentForm.getSecret(), user, answer, parent);
-			// 부모 댓글이 있는 페이지로 가야하므로
-			page = commentService.getPageNumberByAnswer(answer, parent, PAGESIZE);
+			// 부모 댓글이 있는 페이지로 가야하므로, 부모의 페이지를 구해옴
+			page = commentService.getPageNumberByAnswer(answer, comment, PAGESIZE);
 			paging = commentService.getCommentPageByAnswer(page, answer);
 			model.addAttribute("answerCommentPaging", paging);
 			// 전체 댓글 수 갱신
@@ -211,7 +211,7 @@ public class CommentController {
 
 		else {
 			answer = answerService.getAnswer(commentForm.getAnswerId());
-			commentService.getPageNumberByAnswer(answer, comment, PAGESIZE);
+			page = commentService.getPageNumberByAnswer(answer, comment, PAGESIZE);
 		}
 
 		// 부모(댓글)이 있을 경우 연관관계 끊어주기 -> 삭제되더라도 GET 등으로 새로 요청을 보내는 것이 아니기에
@@ -237,12 +237,21 @@ public class CommentController {
 
 		if (type.equals("question")) {
 			paging = commentService.getCommentPageByQuestion(page, question);
+			// 만일 삭제 전이 6개 -> 삭제하면 5개 -> 0패이지가 보여져야 하는데, 삭제 전에 page를 계산하여 1페이지가 보여짐.
+			// 여기서 조건을 검사해줘야 함, 현재 페이지 개수가 0개면 이전 페이지 이동, 단 현재 페이지가 0인데도 개수가 0개?
+			// 그러면 댓글이 아에 없으니 그냥 0페이지 표기!
+			// 삭제하기 전에 page를 구한 이유는 댓글이 삭제되면 삭제한 댓글이 원래 어디 페이지에 있는지 검사가 안되기 때문
+			if(page !=0 && paging.getNumberOfElements() == 0)
+				paging = commentService.getCommentPageByQuestion(page-1, question);
 			model.addAttribute("questionCommentPaging", paging);
 			// 전체 댓글 수 갱신
 			model.addAttribute("totalCount", paging.getTotalElements());
 			return "comment/question_comment :: #question-comment-list";
 		} else {
 			paging = commentService.getCommentPageByAnswer(page, answer);
+			if((page !=0 && paging.getNumberOfElements() == 0))
+				paging = commentService.getCommentPageByAnswer(page-1, answer);
+
 			model.addAttribute("answer", answer);
 			model.addAttribute("answerCommentPaging", paging);
 			// 전체 댓글 수 갱신

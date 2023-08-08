@@ -171,6 +171,10 @@ public class CommentService {
 	}
 
 	public int getPageNumberByQuestion(Question question, Comment comment, int pageSize) {
+		// 자식 댓글이면, 부모 댓글이 원래 있던 페이지 번호를 구해야 하므로 변경
+		if(comment.getParent() != null) {
+			comment = comment.getParent();
+		}
 		List<Comment> commentList = question.getComments();
 		int index = commentList.indexOf(comment);
 
@@ -181,9 +185,13 @@ public class CommentService {
 		return index / pageSize;
 	}
 
-	public int getPageNumberByAnswer(Answer answer, Comment parent, int pageSize) {
+	public int getPageNumberByAnswer(Answer answer, Comment comment, int pageSize) {
+		// 자식 댓글이면, 부모 댓글이 원래 있던 페이지 번호를 구해야 하므로 변경
+		if(comment.getParent() != null) {
+			comment = comment.getParent();
+		}
 		List<Comment> commentList = answer.getComments();
-		int index = commentList.indexOf(parent);
+		int index = commentList.indexOf(comment);
 
 		if (index == -1) {
 			throw new IllegalArgumentException("해당 댓글이 존재하지 않습니다.");

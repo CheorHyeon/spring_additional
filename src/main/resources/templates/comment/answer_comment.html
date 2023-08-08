@@ -594,6 +594,15 @@
           "id": commentId
         },
         success: function (fragment) {
+          // 프래그먼트로부터 jQuery 객체를 생성합니다.
+          const $newFragment = $(fragment);
+
+          //프래그먼트로부터 새로운 코멘트 개수를 가져옵니다.
+          const newTotalComments = $newFragment.find('#new_total_answer_comments').text();
+
+          // 코멘트 카운트를 업데이트합니다.
+          $(`#a-comment-count-${answerId}`).text(newTotalComments);
+
           $('#answer-comment-list').html(fragment);
 
         },
