@@ -1,6 +1,9 @@
 package com.ll.spring_additional.boundedContext.question.controller;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -20,6 +23,8 @@ import org.springframework.web.server.ResponseStatusException;
 import com.ll.spring_additional.boundedContext.answer.entity.Answer;
 import com.ll.spring_additional.boundedContext.answer.form.AnswerForm;
 import com.ll.spring_additional.boundedContext.answer.service.AnswerService;
+import com.ll.spring_additional.boundedContext.comment.entity.Comment;
+import com.ll.spring_additional.boundedContext.comment.service.CommentService;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.question.form.QuestionForm;
 import com.ll.spring_additional.boundedContext.question.questionEnum.QuestionEnum;
@@ -37,6 +42,8 @@ public class QuestionController {
 	private final QuestionService questionService;
 	private final UserService userService;
 	private final AnswerService answerService;
+
+	private final CommentService commentService;
 
 	@GetMapping("/list/{type}")
 	public String list(Model model, @PathVariable String type,
@@ -101,9 +108,11 @@ public class QuestionController {
 	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm,
 		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "") String sort) {
 		Question question = questionService.getQuestion(id);
-		Page<Answer> paging = answerService.getAnswerPage(question, page, sort);
 		model.addAttribute("question", question);
+
+		Page<Answer> paging = answerService.getAnswerPage(question, page, sort);
 		model.addAttribute("paging", paging);
+
 		return "question/question_detail";
 	}
 

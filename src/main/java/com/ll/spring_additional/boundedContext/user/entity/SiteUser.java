@@ -30,4 +30,8 @@ public class SiteUser {
 	public String getJdenticon() {
 		return Ut.hash.sha256(this.username);
 	}
+
+	public boolean isAdmin() {
+		return this.username.equals("admin");
+	}
 }

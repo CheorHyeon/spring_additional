@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ll.spring_additional.boundedContext.answer.entity.Answer;
 import com.ll.spring_additional.boundedContext.answer.repository.AnswerRepository;
 import com.ll.spring_additional.boundedContext.answer.service.AnswerService;
+import com.ll.spring_additional.boundedContext.comment.entity.Comment;
+import com.ll.spring_additional.boundedContext.comment.repository.CommentRepository;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.question.repository.QuestionRepository;
 import com.ll.spring_additional.boundedContext.question.service.QuestionService;
@@ -29,7 +31,8 @@ public class NotProd {
 		UserService userService,
 		AnswerService answerService,
 		QuestionRepository questionRepository,
-		AnswerRepository answerRepository
+		AnswerRepository answerRepository,
+		CommentRepository commentRepository
 	)
 	{
 		return new CommandLineRunner() {
@@ -58,8 +61,8 @@ public class NotProd {
 				Question question1 = questionService.create("질문입니닷", "질문이에요!", user2, 0);
 				Question question2 = questionService.create("질문입니닷22", "질문이에요!22", user2, 0);
 
-				Answer answer1 = answerService.create(question1, "답변1", user1);
-				Answer answer2 = answerService.create(question1, "답변2", user1);
+				Answer answer1 = answerService.create(question2, "답변1", user1);
+				Answer answer2 = answerService.create(question2, "답변2", user1);
 
 				List<Answer> answerList = new ArrayList<>();
 				for (int i = 1; i <= 300; i++) {
@@ -71,6 +74,51 @@ public class NotProd {
 				}
 
 				answerRepository.saveAll(answerList);
+
+				List<Comment> commentList = new ArrayList<>();
+				for(int i=1; i <= 5; i++) {
+					Comment tmp = Comment.builder()
+						.content("테스트 댓글%d".formatted(i))
+						.question(question2)
+						.writer(user2)
+						.build();
+					commentList.add(tmp);
+				}
+				commentRepository.saveAll(commentList);
+
+				Comment commentSecret1 = Comment.builder()
+					.content("테스트 비밀댓글")
+					.writer(user2)
+					.question(question2)
+					.secret(true)
+					.build();
+				commentRepository.save(commentSecret1);
+
+				Comment comment1 = Comment.builder()
+					.content("테스트 대댓글")
+					.writer(user2)
+					.question(question2)
+					.parent(commentRepository.findById(1L).get())
+					.build();
+
+				commentRepository.save(comment1);
+
+				Comment comment3 = Comment.builder()
+					.content("테스트 댓글")
+					.writer(user2)
+					.answer(answer1)
+					.build();
+
+				commentRepository.save(comment3);
+
+				Comment comment4 = Comment.builder()
+					.content("테스트 대댓글")
+					.writer(user2)
+					.answer(answer1)
+					.parent(comment3)
+					.build();
+				commentRepository.save(comment4);
+
 				}
 			};
 	}

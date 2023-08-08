@@ -1,0 +1,651 @@
+<main>
+<!-- 댓글 작성 부분 -->
+  <div id="answer-write" class="d-flex flex-column gap-2 card-body bg-white rounded shadow-lg gap-2" style="margin : 10px">
+      <div class="d-flex justify-content-left">
+        <div class="label d-flex" style="cursor:pointer;">
+          <label class="label gap-2 form-check form-switch">
+            <input type="checkbox" name="secret" id="aSecret" class="form-check-input"/>
+            <i class="fa-solid fa-lock"></i>
+            <span class="label-text font-semibold">비밀댓글</span>
+          </label>
+        </div>
+      </div>
+      <div class="d-flex">
+        <textarea sec:authorize="isAuthenticated()" name="commentContents" placeholder="댓글을 입력해주세요." id="aCommentContents"
+                  style="height: 50px"
+                  class="border border-gray-300 flex-grow-1"></textarea>
+        <textarea sec:authorize="isAnonymous()" disabled placeholder="로그인 후 댓글 작성이 가능합니다."
+                  style="height: 50px"
+                  class="border border-gray-300 flex-grow-1"></textarea>
+        <button class="btn btn-primary" onclick="aCommentWrite()">등록</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 댓글 출력 부분-->
+  <div id="answer-comment-list" class="mt-2" style="margin : 10px">
+    <!-- 댓글 개수 갱신용 -->
+    <div id="new_total_answer_comments" th:if="${totalCount !=null}" th:text="${totalCount}" style="display: none;"></div>
+    <div th:if="${totalCount ==null}" th:text="${totalCount}"style="display: none;">0</div>
+    <ul>
+      <li class="nav-link d-flex flex-column gap-2" th:each="comment : ${answerCommentPaging}" th:if="${comment.parent == null}">
+        <div class="card-body bg-white rounded shadow-lg">
+          <a th:id="|answer_comment_${comment.id}|"></a>
+          <div class="d-flex align-items-baseline gap-2">
+            <p th:text="${comment.writer.username}" class="text-primary"></p>
+            <!-- 비밀댓글 표시 자물쇠-->
+            <span class="badge text-bg-success" th:if="${comment.secret}">
+              <i class="fa-solid fa-lock" style="color: #ffffff;"></i>
+            </span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <p th:text="${comment.content}" th:if="${!comment.deleted and !comment.secret}"></p>
+            <p class="text-body-tertiary" th:if="${comment.deleted}"> 삭제된 댓글입니다.</p>
+            <!-- 비밀 댓글 분기 시작, 위 : 로그인 시 댓글 작성자 or 질문 작성자 or 관리자일 경우 확인 가능 / 아래 : 로그인 안하면 아에 안보이게-->
+            <div sec:authorize="isAuthenticated()">
+              <p class="text-lg font-bold" th:if="${comment.secret and ((comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}"
+              th:text="${comment.content}"></p>
+              <p class="text-lg font-bold"
+                 th:if="${comment.secret and !((comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}">
+                비밀 댓글입니다.</p>
+            </div>
+            <div sec:authorize="isAnonymous()">
+              <p class="text-lg font-bold" th:if="${comment.secret}">
+                비밀 댓글입니다.</p>
+            </div>
+            <!-- 비밀 댓글 분기 끝 -->
+            <!-- 댓글 우측 작성, 수정일 시작-->
+            <div class="gap-3">
+              <div class="badge bg-light text-dark p-2 text-start gap-3">
+                작성일
+                <div th:text="${#temporals.format(comment.createDate, 'yyyy-MM-dd HH:mm')}"></div>
+              </div>
+              <div th:if="${comment.modifyDate != null}" class="badge bg-light text-dark p-2 text-start gap-3">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                수정일
+                <div th:text="${#temporals.format(comment.modifyDate, 'yyyy-MM-dd HH:mm')}"></div>
+              </div>
+            </div>
+          </div>
+          <!-- 삭제 할 댓글 id와 작성자 정보 저장 용-->
+          <input type="hidden" th:id="'comment-' + ${comment.id}" th:value="${comment.id}"/>
+          <input type="hidden" th:id="'writer-' + ${comment.id}" th:value="${comment.writer.id}"/>
+          <!-- 수정폼에서 수정 전 값 불러오기 용-->
+          <input type="hidden" th:id="'comment-content-' + ${comment.id}" th:value="${comment.content}"/>
+          <input type="hidden" th:id="'comment-secret-' + ${comment.id}" th:value="${comment.secret}"/>
+
+          <!-- 수정, 삭제, 답글 등록 버튼-->
+          <div sec:authorize="isAuthenticated()" class="d-flex justify-content-start mt-3 gap-2">
+            <button class="btn btn-sm btn-secondary" th:data-comment-index="${comment.id}"
+                    onclick="answerShowReplyForm(this.getAttribute('data-comment-index'));">
+              답글 작성
+            </button>
+            <button class="btn btn-sm btn-secondary"
+                    th:if="${(!comment.deleted) and ((#authentication.getPrincipal().getUsername() eq comment.writer.username) or #authentication.principal.username eq 'admin')}"
+                    th:data-comment-index="${comment.id}"
+                    th:text="수정" onclick="answerShowModifyForm(this.getAttribute('data-comment-index'));">
+            </button>
+            <button class="btn btn-sm btn-secondary"
+                    th:if="${(!comment.deleted) and ((#authentication.getPrincipal().getUsername() == comment.writer.username) or #authentication.principal.username eq 'admin')}"
+                    th:data-comment-index="${comment.id}"
+                    th:text="삭제"
+                    onclick="if (confirm('해당 댓글을 삭제하시겠습니까?')) answerDeleteComment(this.getAttribute('data-comment-index'));">
+            </button>
+          </div>
+        </div>
+
+        <!-- 답글 버튼 클릭 -->
+        <div th:id="'reply-form-' + ${comment.id}" class="d-flex flex-column gap-2 visually-hidden" style="margin : 10px">
+          <textarea placeholder="답글을 입력해주세요." th:id="'replyCommentContents-' + ${comment.id}"  style="height: 50px"
+                    class="border border-gray-300 rounded-lg textarea-lg flex-grow-1 focus:ring-blue-400"></textarea>
+          <div class="d-flex justify-content-start">
+            <label class="label gap-2" style="cursor:pointer;">
+              <i class="fa-solid fa-lock"></i>
+              <span class="label-text font-semibold">비밀댓글</span>
+              <input type="checkbox" th:id="'replySecret-' + ${comment.id}"
+                     class="toggle toggle-primary"/>
+            </label>
+          </div>
+          <button id="answer-reply-comment-write-btn" th:data-comment-index="${comment.id}"
+                  onclick="answerReplyCommentWrite(this.getAttribute('data-comment-index'))"
+                  class="btn btn-sm mb-3 btn-secondary" style="width:6%">답글작성
+          </button>
+        </div>
+
+        <!-- 댓글 수정 버튼 클릭 -->
+        <div th:id="'modify-form-' + ${comment.id}" class="d-flex flex-column gap-2 visually-hidden" style="margin:10px;">
+          <input type="hidden" th:id="'modify-comment-' + ${comment.id}" th:value="${comment.id}"/>
+          <input type="hidden" th:id="'modify-writer-' + ${comment.id}" th:value="${comment.writer.id}"/>
+          <textarea placeholder="수정할 내용을 입력해주세요" th:id="'modify-comment-contents-' + ${comment.id}"
+                    class="ml-2 flex-grow-1"></textarea>
+
+          <div class="d-flex">
+            <label class="label gap-2 form-check form-switch" style="cursor:pointer;">
+              <input type="checkbox" th:id="'modify-secret-' + ${comment.id}" class="form-check-input"/>
+              <i class="fa-solid fa-lock"></i>
+              <span class="label-text font-semibold">비밀댓글</span>
+            </label>
+          </div>
+          <button id="modify-comment-write-btn" th:data-comment-index="${comment.id}"
+                  onclick="answerModifyCommentWrite(this.getAttribute('data-comment-index'))"
+                  class="btn btn-sm mb-3 btn-secondary" style="width:6%">댓글수정
+          </button>
+        </div>
+
+        <!-- 대댓글 출력-->
+        <ul class="ml-8 space-y-2">
+          <li th:each="childComment, childIndex : ${comment.children}">
+            <div class="p-4">
+              <a th:id="|answer_comment_${childComment.id}|"></a>
+              <div class="d-flex align-items-baseline gap-2">
+                <p th:text="${childComment.writer.username}" class="text-primary"></p>
+                <!-- 비밀댓글 표시 자물쇠-->
+                <span class="badge text-bg-success" th:if="${childComment.secret}">
+                  <i class="fa-solid fa-lock" style="color: #ffffff;"></i>
+                </span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <p th:text="${childComment.content}" th:if="${!childComment.deleted and !childComment.secret}"></p>
+                <p class="text-body-tertiary" th:if="${childComment.deleted}"> 삭제된 댓글입니다.</p>
+                <!-- 비밀 댓글 분기 시작, 위 : 로그인 시 대댓글 작성자 or 댓글 작성자 or 질문 작성자 or 관리자일 경우 확인 가능 / 아래 : 로그인 안하면 아에 안보이게-->
+                <div sec:authorize="isAuthenticated()">
+                  <p class="text-lg font-bold" th:if="${childComment.secret and ((childComment.writer.username == #authentication.getPrincipal().getUsername()) or (comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}"
+                     th:text="${childComment.content}"></p>
+                  <p class="text-lg font-bold"
+                     th:if="${childComment.secret and !((childComment.writer.username == #authentication.getPrincipal().getUsername()) or (comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}">
+                    비밀 댓글입니다.</p>
+                </div>
+                <div sec:authorize="isAnonymous()">
+                  <p class="text-lg font-bold" th:if="${childComment.secret}">
+                    비밀 댓글입니다.</p>
+                </div>
+                <!-- 비밀 댓글 분기 끝 -->
+                <!-- 댓글 우측 작성, 수정일 시작-->
+                <div class="gap-3">
+                  <div class="badge bg-light text-dark p-2 text-start gap-3">
+                    작성일
+                    <div th:text="${#temporals.format(childComment.createDate, 'yyyy-MM-dd HH:mm')}"></div>
+                  </div>
+                  <div th:if="${childComment.modifyDate != null}" class="badge bg-light text-dark p-2 text-start gap-3">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    수정일
+                    <div th:text="${#temporals.format(childComment.modifyDate, 'yyyy-MM-dd HH:mm')}"></div>
+                  </div>
+                </div>
+              </div>
+              <!-- 답글 삭제, 수정시 답글 정보 -->
+              <input type="hidden" th:id="'modify-reply-comment-' + ${childComment.id}"
+                     th:value="${childComment.id}"/>
+              <input type="hidden" th:id="'modify-reply-writer-' + ${childComment.id}"
+                     th:value="${childComment.writer.id}"/>
+              <!-- 수정폼에서 수정 전 값 불러오기 용-->
+              <input type="hidden" th:id="'child-comment-content-' + ${childComment.id}"
+                     th:value="${childComment.content}"/>
+              <input type="hidden" th:id="'child-comment-secret-' + ${childComment.id}"
+                     th:value="${childComment.secret}"/>
+              <!-- 답글(대댓글) 수정, 삭제 버튼-->
+              <div sec:authorize="isAuthenticated()" class="d-flex justify-content-start mt-3 gap-2">
+                <button class="btn btn-sm btn-secondary"
+                        th:if="${(!childComment.deleted) and ((#authentication.getPrincipal().getUsername() == childComment.writer.username) or #authentication.principal.username eq 'admin') }"
+                        th:data-child-index="${childComment.id}"
+                        th:text="수정" onclick="answerShowReplyModifyForm(this.getAttribute('data-child-index'));">
+                </button>
+                <button class="btn btn-sm btn-secondary"
+                        th:if="${(!childComment.deleted) and ((#authentication.getPrincipal().getUsername() == childComment.writer.username) or #authentication.principal.username eq 'admin')}"
+                        th:data-comment-index="${childComment.id}"
+                        th:text="삭제"  onclick="if (confirm('해당 댓글을 삭제하시겠습니까?')) answerDeleteReplyComment(this.getAttribute('data-comment-index'));">
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <!-- 답글(대댓글) 수정 버튼 클릭시 나타날 폼 -->
+              <div th:id="'modify-reply-form-' + ${childComment.id}" class="d-flex flex-column gap-2 visually-hidden" style="margin:10px;">
+                <textarea placeholder="수정할 내용을 입력해주세요"
+                          th:id="'modify-reply-comment-contents-' + ${childComment.id}"  class="ml-2 flex-grow-1"></textarea>
+
+                <div class="d-flex">
+                  <label class="label gap-2 form-check form-switch" style="cursor:pointer;">
+                    <input type="checkbox" th:id="'modify-reply-secret-' + ${childComment.id}" class="form-check-input"/>
+                    <i class="fa-solid fa-lock"></i>
+                    <span class="label-text font-semibold">비밀댓글</span>
+                  </label>
+                </div>
+
+                <button id="answer-modify-reply-comment-write-btn" th:data-child-index="${childComment.id}"
+                        onclick="answerModifyReplyCommentWrite(this.getAttribute('data-child-index'))"
+                        class="btn btn-sm mb-3 btn-secondary" style="width:6%">댓글수정
+                </button>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </li>
+    </ul>
+    <!-- 댓글 페이징처리 시작 -->
+    <div th:if="${!answerCommentPaging.isEmpty()}">
+      <ul class="pagination justify-content-center">
+        <li class="page-item" th:classappend="${answerCommentPaging.number==0} ? 'disabled'">
+          <a class="page-link" href="javascript:void(0);" onclick="changeAnswerCommentPage(0)">
+            <span>처음</span>
+          </a>
+        </li>
+        <li class="page-item" th:classappend="${!answerCommentPaging.hasPrevious} ? 'disabled'">
+          <a class="page-link" href="javascript:void(0);"
+             th:data-aCommentPage="${answerCommentPaging.number-1}" onclick="changeAnswerCommentPage(this.getAttribute('data-aCommentPage'))">
+            <span>이전</span>
+          </a>
+        </li>
+        <li th:each="page: ${#numbers.sequence(0, answerCommentPaging.totalPages-1)}"
+            th:if="${page >= answerCommentPaging.number-5 and page <= answerCommentPaging.number+5}"
+            th:classappend="${page == answerCommentPaging.number} ? 'active'"
+            class="page-item">
+          <a th:text="${page}" class="page-link" href="javascript:void(0);"  th:data-aCommentPage="${page}"
+             onclick="changeAnswerCommentPage(this.getAttribute('data-aCommentPage'))"></a>
+        </li>
+        <li class="page-item" th:classappend="${!answerCommentPaging.hasNext} ? 'disabled'">
+          <a class="page-link" href="javascript:void(0);" th:data-aCommentPage="${answerCommentPaging.number+1}"
+             onclick="changeAnswerCommentPage(this.getAttribute('data-aCommentPage'))">
+            <span>다음</span>
+          </a>
+        </li>
+        <li class="page-item" th:classappend="${answerCommentPaging.number==(answerCommentPaging.totalPages-1)} ? 'disabled'">
+          <a class="page-link" href="javascript:void(0);" th:data-aCommentPage="${answerCommentPaging.totalPages-1}"
+             onclick="changeAnswerCommentPage(this.getAttribute('data-aCommentPage'))">
+            <span>끝</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    <!-- 페이징처리 끝 -->
+
+  <!-- 스크립트는 main 태그 안족에, 타임리프 레이아웃에 의해 body 밖은 무시됨-->
+
+  <script th:inline="javascript">
+
+    // 답변, 댓글 수정 동시에 못하도록 하기 위한 답변 폼 숨기기 메서드
+    const answerHideReplyForm = (commentIndex) => {
+      const formId = "reply-form-" + commentIndex;
+      const formElement = document.getElementById(formId);
+      if (formElement) {
+        formElement.classList.add("visually-hidden");
+      } else {
+        console.error("Element with ID '" + formId + "' not found.");
+      }
+    };
+
+    // 답변, 댓글 수정 동시에 못하도록 하기 위한 수정 폼 숨기기 메서드
+    const answerHideModifyForm = (commentIndex) => {
+      const formId = "modify-form-" + commentIndex;
+      const formElement = document.getElementById(formId);
+      if (formElement) {
+        formElement.classList.add("visually-hidden");
+      } else {
+        console.error("Element with ID '" + formId + "' not found.");
+      }
+    };
+
+    // 답글 버튼 눌렀을 때 입력 창 나오게
+    const answerShowReplyForm = (commentIndex) => {
+      console.log("showReplyForm 호출");
+      const formId = "reply-form-" + commentIndex;
+      const formElement = document.getElementById(formId);
+      if (formElement) {
+        formElement.classList.remove("visually-hidden");
+        answerHideModifyForm(commentIndex); // 수정 입력 폼 숨기기
+      } else {
+        console.error("Element with ID '" + formId + "' not found.");
+      }
+    }
+
+    // 댓글 수정 버튼 눌렀을 때 입력 창 나오게
+    const answerShowModifyForm = (commentIndex) => {
+      console.log("showModifyForm 호출");
+      const formId = "modify-form-" + commentIndex;
+      // 기존 값 가져오기 필요
+      const formElement = document.getElementById(formId);
+      const existingCommentContents = document.getElementById("comment-content-" + commentIndex).value;
+      const existingSecretValue = document.getElementById("comment-secret-" + commentIndex).value;
+
+      if (formElement) {
+        answerHideReplyForm(commentIndex); // 답글 입력 폼 숨기기
+        formElement.classList.remove("visually-hidden");
+        // 기존 값 채우기
+        document.getElementById("modify-comment-contents-" + commentIndex).value = existingCommentContents;
+        document.getElementById("modify-secret-" + commentIndex).checked = (existingSecretValue == "true");
+        // ...
+      } else {
+        console.error("Element with ID '" + formId + "' not found.");
+      }
+    }
+
+
+    // 답글(대댓글) 수정 버튼 눌렀을 때 입력 창 나오게
+    const answerShowReplyModifyForm = (childIndex) => {
+      console.log("showReplyModifyForm 호출");
+      const formId = "modify-reply-form-" + childIndex;
+      const formElement = document.getElementById(formId);
+      const existingCommentContents = document.getElementById("child-comment-content-" + childIndex).value;
+      const existingSecretValue = document.getElementById("child-comment-secret-" + childIndex).value;
+
+      if (formElement) {
+        formElement.classList.remove("visually-hidden");
+        // 기존 값 채우기
+        document.getElementById("modify-reply-comment-contents-" + childIndex).value = existingCommentContents;
+        document.getElementById("modify-reply-secret-" + childIndex).checked = (existingSecretValue == "true");
+        // ...
+      } else {
+        console.error("Element with ID '" + formId + "' not found.");
+      }
+
+    }
+
+    // 댓글 작성 메서드
+    const aCommentWrite = () => {
+      const secretValue = document.getElementById("aSecret").checked ? true : false;
+      const contents = document.getElementById("aCommentContents").value.trim();
+      const questionId = [[${question.id}]];
+      const answerId = [[${answer.id}]];
+
+      if (contents.length == 0) {
+        alert('답글을 입력해주세요');
+        return;
+      }
+
+      var header = $("meta[name='_csrf_header']").attr('content');
+      var token = $("meta[name='_csrf']").attr('content');
+
+      $.ajax({
+        // 요청방식: post, 요청주소: /comment/create/question
+        // 요청데이터: 작성내용, 게시글번호, 비밀 댓글 여부, 부모 댓글 id
+        type: "post",
+        url: "/comment/create/answer",
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader(header, token);
+        },
+        data: {
+          "questionId": questionId,
+          "answerId" : answerId,
+          "secret": secretValue,
+          "commentContents": contents
+        },
+        success: function (fragment) {
+          document.getElementById("aCommentContents").value = "";
+          document.getElementById("aSecret").checked=false;
+
+          // 프래그먼트로부터 jQuery 객체를 생성합니다.
+          const $newFragment = $(fragment);
+
+          //프래그먼트로부터 새로운 코멘트 개수를 가져옵니다.
+          const newTotalComments = $newFragment.find('#new_total_answer_comments').text();
+
+          // 코멘트 카운트를 업데이트합니다.
+          $(`#a-comment-count-${answerId}`).text(newTotalComments);
+          $('#answer-comment-list').html(fragment);
+        },
+        error: function (err) {
+          console.log("요청 실패", err);
+        }
+      });
+    }
+
+    // 답글(대댓글) 작성 메서드
+    const answerReplyCommentWrite = (commentIndex) => {
+      const secretValue =  document.getElementById("replySecret-" + commentIndex).checked ? true : false;
+      const contents = document.getElementById("replyCommentContents-" + commentIndex).value.trim();
+      const answerId = [[${answer.id}]];
+      const questionId = [[${question.id}]];
+
+      if (contents.length == 0) {
+        alert('답글을 입력해주세요');
+        return;
+      }
+
+      const parentId = document.getElementById("comment-" + commentIndex).value;
+      var header = $("meta[name='_csrf_header']").attr('content');
+      var token = $("meta[name='_csrf']").attr('content');
+
+      $.ajax({
+        // 요청방식: post, 요청주소: /comment/reply/create
+        // 요청데이터: 작성내용, 게시글번호, 비밀 댓글 여부, 부모 댓글 id
+        type: "post",
+        url: "/comment/reply/create/answer",
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader(header, token);
+        },
+        data: {
+          "questionId" : questionId,
+          "answerId": answerId,
+          "secret": secretValue,
+          "commentContents": contents,
+          "parentId": parentId
+        },
+        success: function (fragment) {
+          // 프래그먼트로부터 jQuery 객체를 생성합니다.
+          const $newFragment = $(fragment);
+
+          //프래그먼트로부터 새로운 코멘트 개수를 가져옵니다.
+          const newTotalComments = $newFragment.find('#new_total_answer_comments').text();
+
+          // 코멘트 카운트를 업데이트합니다.
+          $(`#a-comment-count-${answerId}`).text(newTotalComments);
+
+          $('#answer-comment-list').html(fragment);
+        },
+        error: function (err) {
+          console.log("요청 실패", err);
+        }
+      });
+    }
+    // 댓글 수정 메서드
+    const answerModifyCommentWrite = (commentIndex) => {
+      const secretValue = document.getElementById("modify-secret-" + commentIndex).checked ? true : false; // 비밀 댓글 체크 여부
+      const contents = document.getElementById("modify-comment-contents-" + commentIndex).value.trim();
+      const questionId = [[${question.id}]];
+      const answerId = [[${answer.id}]];
+
+      if (contents.length == 0) {
+        alert('댓글을 입력해주세요');
+        return;
+      }
+
+      const writerId = document.getElementById("modify-writer-" + commentIndex).value; // 작성자 ID
+      const commentId = document.getElementById("modify-comment-" + commentIndex).value; // 댓글번호
+
+      var header = $("meta[name='_csrf_header']").attr('content');
+      var token = $("meta[name='_csrf']").attr('content');
+      //게시글 번호
+      console.log("비밀여부: ", secretValue);
+      console.log("내용: ", contents);
+
+      $.ajax({
+        // 요청방식: post, 요청주소: /comment/reply/create
+        // 요청데이터: 작성내용, 게시글번호, 비밀 댓글 여부, 부모 댓글 id
+        type: "post",
+        url: "/comment/modify/answer",
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader(header, token);
+        },
+        data: {
+          "answerId":answerId,
+          "questionId": questionId,
+          "secret": secretValue,
+          "commentContents": contents,
+          "commentWriter": writerId,
+          "id": commentId
+        },
+        success: function (fragment) {
+          $('#answer-comment-list').html(fragment);
+        },
+        error: function (err) {
+          console.log("요청 실패", err);
+        }
+      });
+    }
+
+    // 댓글 삭제 메서드
+    const answerDeleteComment = (commentIndex) => {
+      const questionId = [[${question.id}]];
+      const commentId = document.getElementById("comment-" + commentIndex).value; // 댓글번호
+      const writerId = document.getElementById("writer-" + commentIndex).value; // 작성자 ID
+      const answerId = [[${answer.id}]];
+      var header = $("meta[name='_csrf_header']").attr('content');
+      var token = $("meta[name='_csrf']").attr('content');
+
+      $.ajax({
+        // 요청방식: post, 요청주소: /comment/reply/create
+        // 요청데이터: 작성내용, 게시글번호, 비밀 댓글 여부, 부모 댓글 id
+        type: "post",
+        url: "/comment/delete/answer",
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader(header, token);
+        },
+        data: {
+          "questionId": questionId,
+          "answerId" : answerId,
+          "commentWriter": writerId,
+          "id": commentId
+        },
+        success: function (fragment) {
+          // 프래그먼트로부터 jQuery 객체를 생성합니다.
+          const $newFragment = $(fragment);
+
+          //프래그먼트로부터 새로운 코멘트 개수를 가져옵니다.
+          const newTotalComments = $newFragment.find('#new_total_answer_comments').text();
+
+          // 코멘트 카운트를 업데이트합니다.
+          $(`#a-comment-count-${answerId}`).text(newTotalComments);
+
+          $('#answer-comment-list').html(fragment);
+        },
+        error: function (err) {
+          console.log("요청 실패", err);
+        }
+      });
+    }
+
+    // 답글(대댓글) 수정 메서드
+    const answerModifyReplyCommentWrite = (childIndex) => {
+      const secretValue = document.getElementById("modify-reply-secret-" + childIndex).checked ? true : false; // 비밀 댓글 체크 여부
+      const contents = document.getElementById("modify-reply-comment-contents-" + childIndex).value.trim();
+      const questionId = [[${question.id}]];
+      const answerId = [[${answer.id}]];
+      const writerId = document.getElementById("modify-reply-writer-" + childIndex).value; // 작성자 ID
+      const commentId = document.getElementById("modify-reply-comment-" + childIndex).value; // 댓글번호
+      if (contents.length == 0) {
+        alert('댓글을 입력해주세요');
+        return;
+      }
+
+      var header = $("meta[name='_csrf_header']").attr('content');
+      var token = $("meta[name='_csrf']").attr('content');
+      //게시글 번호
+      console.log("비밀여부: ", secretValue);
+      console.log("내용: ", contents);
+
+      $.ajax({
+        // 요청방식: post, 요청주소: /comment/modify (댓글, 답글 로직 동일)
+        // 요청데이터: 작성내용, 게시글번호, 비밀 댓글 여부, 부모 댓글 id
+        type: "post",
+        url: "/comment/modify/answer",
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader(header, token);
+        },
+        data: {
+          "questionId": questionId,
+          "answerId" : answerId,
+          "secret": secretValue,
+          "commentContents": contents,
+          "commentWriter": writerId,
+          "id": commentId
+        },
+        success: function (fragment) {
+          $('#answer-comment-list').html(fragment);
+        },
+        error: function (err) {
+          console.log("요청 실패", err);
+        }
+      });
+    }
+
+    //답글(대댓글) 삭제 메서드
+    const answerDeleteReplyComment = (childIndex) => {
+      const questionId = [[${question.id}]];
+      const answerId = [[${answer.id}]];
+      const writerId = document.getElementById("modify-reply-writer-" + childIndex).value; // 작성자 ID
+      const commentId = document.getElementById("modify-reply-comment-" + childIndex).value; // 댓글번호
+
+
+      var header = $("meta[name='_csrf_header']").attr('content');
+      var token = $("meta[name='_csrf']").attr('content');
+
+      $.ajax({
+        // 요청방식: post, 요청주소: /comment/delete
+        // 요청데이터: 작성내용, 게시글번호, 비밀 댓글 여부, 부모 댓글 id
+        type: "post",
+        url: "/comment/delete/answer",
+        beforeSend: function (xhr) {
+          xhr.setRequestHeader(header, token);
+        },
+        data: {
+          "questionId": questionId,
+          "answerId" : answerId,
+          "commentWriter": writerId,
+          "id": commentId
+        },
+        success: function (fragment) {
+          // 프래그먼트로부터 jQuery 객체를 생성합니다.
+          const $newFragment = $(fragment);
+
+          //프래그먼트로부터 새로운 코멘트 개수를 가져옵니다.
+          const newTotalComments = $newFragment.find('#new_total_answer_comments').text();
+
+          // 코멘트 카운트를 업데이트합니다.
+          $(`#a-comment-count-${answerId}`).text(newTotalComments);
+
+          $('#answer-comment-list').html(fragment);
+
+        },
+        error: function (err) {
+          console.log("요청 실패", err);
+        }
+      });
+    }
+
+    // 답변 댓글 페이지 이동
+    const changeAnswerCommentPage = (aCommentPage) => {
+      const questionId = [[${question.id}]];
+      const answerId = [[${answer.id}]];
+      $.ajax({
+        // 요청방식: get, 요청주소: /comment/qyestion/questionId
+        // 요청데이터: 작성내용, 게시글번호, 비밀 댓글 여부, 부모 댓글 id
+        type: "get",
+        url: "/comment/answer/" + answerId,
+        data: {
+          "commentPage": aCommentPage,
+          "questionId" : questionId
+        },
+        success: function (fragment) {
+          $(`#a-comment-list-${answerId}`).html(fragment);
+        },
+        error: function (err) {
+          console.log("요청 실패", err);
+        }
+      });
+    }
+
+    function Answer_CommentForm__submit(form) {
+      // username 이(가) 올바른지 체크
+
+      form.commentContents.value = form.commentContents.value.trim(); // 입력란의 입력값에 있을지 모르는 좌우공백제거
+
+      if (form.commentContents.value.length === 0) {
+        alert('내용을 입력해주세요');
+        form.commentContents.focus();
+        return;
+      }
+      form.submit(); // 폼 발송
+    }
+  </script>
+
+</main>
