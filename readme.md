@@ -52,7 +52,9 @@
     - 임시 비밀번호 이메일 발송(비밀번호 찾기)
     - 비밀번호 변경
     - [PR 바로가기](https://github.com/CheorHyeon/spring_additional/pull/13)
-  - [ ] 소셜 로그인(카카오, 구글)
+  - [x] 소셜 로그인(카카오, 구글)
+    - 구글, 카카오, 네이버 로그인
+    - [PR 바로가기](https://github.com/CheorHyeon/spring_additional/pull/19)
   - [x] 답변 페이징, 정렬
     - 답변 페이징
     - 정렬 기준 선택 가능
