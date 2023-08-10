@@ -44,13 +44,16 @@ public class UserService {
 			throw new RuntimeException("해당 ID는 이미 사용중입니다.");
 		}
 
-		if (StringUtils.hasText(password)) password = passwordEncoder.encode(password);
+		// 소셜 로그인의 경우 아이디가 게시판에 노출되므로, 비번 없는 공백 알고 혹시 모를 공격 방어
+		if(!providerTypeCode.equals("SBB")) {
+			password = createRandomPassword();
+		}
 
 		SiteUser user = new SiteUser();
 		user.setUsername(username);
 		user.setEmail(email);
 		user.setProviderTypeCode(providerTypeCode);
-		user.setPassword(password);
+		user.setPassword(passwordEncoder.encode(password));
 		userRepository.save(user);
 		return user;
 	}
