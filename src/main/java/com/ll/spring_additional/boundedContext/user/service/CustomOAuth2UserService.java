@@ -31,9 +31,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 		// access 토큰으로 user 정보 조회
 		OAuth2User oAuth2User = super.loadUser(userRequest);
 
-		String oauthId = oAuth2User.getName();
-
 		String providerTypeCode = userRequest.getClientRegistration().getRegistrationId().toUpperCase();
+
+		String oauthId = switch (providerTypeCode) {
+			case "NAVER" -> ((Map<String, String>) oAuth2User.getAttributes().get("response")).get("id");
+			default -> oAuth2User.getName();
+		};
 
 		String username = providerTypeCode + "__%s".formatted(oauthId);
 
