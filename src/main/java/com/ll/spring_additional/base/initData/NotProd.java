@@ -47,6 +47,8 @@ public class NotProd {
 				SiteUser user3 = userService.create("puar12", "r4560798@naver.com", "1234");
 
 				SiteUser user4ByKakao = userService.whenSocialLogin("KAKAO", "KAKAO__2957634751");
+				SiteUser user5ByKakao = userService.whenSocialLogin("GOOGLE", "GOOGLE__116304245007543902962");
+
 				List<Question> list = new ArrayList<>();
 
 				for (int i = 1; i <= 300; i++) {
