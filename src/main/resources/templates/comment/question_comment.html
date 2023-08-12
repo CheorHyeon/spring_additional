@@ -43,7 +43,7 @@
             <!-- 비밀 댓글 분기 시작, 위 : 로그인 시 댓글 작성자 or 질문 작성자 or 관리자일 경우 확인 가능 / 아래 : 로그인 안하면 아에 안보이게-->
             <div sec:authorize="isAuthenticated()">
               <p class="text-lg font-bold" th:if="${comment.secret and ((comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}"
-              th:text="${comment.content}"></p>
+              th:text="${comment.content}" style="white-space: pre-wrap;" ></p>
               <p class="text-lg font-bold"
                  th:if="${comment.secret and !((comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}">
                 비밀 댓글입니다.</p>
@@ -149,7 +149,7 @@
                 <!-- 비밀 댓글 분기 시작, 위 : 로그인 시 대댓글 작성자 or 댓글 작성자 or 질문 작성자 or 관리자일 경우 확인 가능 / 아래 : 로그인 안하면 아에 안보이게-->
                 <div sec:authorize="isAuthenticated()">
                   <p class="text-lg font-bold" th:if="${childComment.secret and ((childComment.writer.username == #authentication.getPrincipal().getUsername()) or (comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}"
-                     th:text="${childComment.content}"></p>
+                     th:text="${childComment.content}" style="white-space: pre-wrap;" ></p>
                   <p class="text-lg font-bold"
                      th:if="${childComment.secret and !((childComment.writer.username == #authentication.getPrincipal().getUsername()) or (comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}">
                     비밀 댓글입니다.</p>
@@ -621,19 +621,6 @@
       });
     }
 
-
-    function CommentForm__submit(form) {
-      // username 이(가) 올바른지 체크
-
-      form.commentContents.value = form.commentContents.value.trim(); // 입력란의 입력값에 있을지 모르는 좌우공백제거
-
-      if (form.commentContents.value.length === 0) {
-        alert('내용을 입력해주세요');
-        form.commentContents.focus();
-        return;
-      }
-      form.submit(); // 폼 발송
-    }
   </script>
 
 </main>
