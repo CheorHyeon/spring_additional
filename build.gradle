@@ -38,6 +38,11 @@ dependencies {
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 
     implementation 'org.commonmark:commonmark:0.21.0'
+    implementation 'org.commonmark:commonmark-ext-gfm-tables:0.20.0' // 테이블 관련 추가 설정
+    implementation 'org.commonmark:commonmark-ext-gfm-strikethrough:0.21.0' // 취소선 관련 추가 설정
+    implementation 'com.atlassian.commonmark:commonmark-ext-task-list-items:0.15.0' // task 관련 추가 설정
+
+    implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20211018.2'
 
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 

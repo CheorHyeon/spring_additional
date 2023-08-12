@@ -27,12 +27,12 @@
     <!-- 댓글 개수 갱신용 -->
     <div id="new_total_answer_comments" th:if="${totalCount !=null}" th:text="${totalCount}" style="display: none;"></div>
     <div th:if="${totalCount ==null}" th:text="${totalCount}"style="display: none;">0</div>
-    <ul>
-      <li class="nav-link d-flex flex-column gap-2" th:each="comment : ${answerCommentPaging}" th:if="${comment.parent == null}">
+
+      <div class="nav-link d-flex flex-column gap-2" th:each="comment : ${answerCommentPaging}" th:if="${comment.parent == null}">
         <div class="card-body bg-white rounded shadow-lg">
           <a th:id="|answer_comment_${comment.id}|"></a>
           <div class="d-flex align-items-baseline gap-2">
-            <p th:text="${comment.writer.username}" class="text-primary"></p>
+            <p th:text="${comment.writer.username}" class="text-primary" style="white-space: pre-wrap;"></p>
             <!-- 비밀댓글 표시 자물쇠-->
             <span class="badge text-bg-success" th:if="${comment.secret}">
               <i class="fa-solid fa-lock" style="color: #ffffff;"></i>
@@ -133,8 +133,8 @@
         </div>
 
         <!-- 대댓글 출력-->
-        <ul class="ml-8 space-y-2">
-          <li th:each="childComment, childIndex : ${comment.children}">
+        <div class="ml-8 space-y-2">
+          <div th:each="childComment, childIndex : ${comment.children}">
             <div class="p-4">
               <a th:id="|answer_comment_${childComment.id}|"></a>
               <div class="d-flex align-items-baseline gap-2">
@@ -145,7 +145,7 @@
                 </span>
               </div>
               <div class="d-flex justify-content-between">
-                <p th:text="${childComment.content}" th:if="${!childComment.deleted and !childComment.secret}"></p>
+                <p th:text="${childComment.content}" style="white-space: pre-wrap;" th:if="${!childComment.deleted and !childComment.secret}"></p>
                 <p class="text-body-tertiary" th:if="${childComment.deleted}"> 삭제된 댓글입니다.</p>
                 <!-- 비밀 댓글 분기 시작, 위 : 로그인 시 대댓글 작성자 or 댓글 작성자 or 질문 작성자 or 관리자일 경우 확인 가능 / 아래 : 로그인 안하면 아에 안보이게-->
                 <div sec:authorize="isAuthenticated()">
@@ -218,10 +218,9 @@
                 </button>
               </div>
             </div>
-          </li>
-        </ul>
-      </li>
-    </ul>
+          </div>
+        </div>
+      </div>
     <!-- 댓글 페이징처리 시작 -->
     <div th:if="${!answerCommentPaging.isEmpty()}">
       <ul class="pagination justify-content-center">

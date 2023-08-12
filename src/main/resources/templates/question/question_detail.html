@@ -1,10 +1,20 @@
 <html layout:decorate="~{common/layout}">
+<head>
+    <!-- 마크다운 css -->
+    <link rel="stylesheet" type="text/css" th:href="@{/markdown.css}">
+    <!-- highlight.JS  -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js" integrity="sha512-rdhY3cbXURo13l/WU9VlaRyaIYeJ/KBakckXIvJNAQde8DgpOmE+eZf7ha4vdqVjTtwQt69bD2wH2LXob/LB7Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" integrity="sha512-0aPQyyeZrWj9sCA46UlmWgKOP0mUipLQ6OZXu8l4IcAmD2u31EPEy9VcIMvl7SoAaKe8bLXZhYoMaE/in+gcgA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script>
+        hljs.highlightAll();
+    </script>
+</head>
 <main layout:fragment="content" class="container my-3" id="questionDetail">
     <!-- 질문 -->
     <h2 class="border-bottom py-2" th:text="${question.subject}"></h2>
     <div class="card my-3">
         <div class="card-body">
-            <div class="card-text" th:utext="${@commonUtil.markdown(question.content)}"></div>
+            <div class="card-text" th:utext="${@commonUtil.markdown(question.content)}" style="white-space: pre-wrap;"></div>
             <div class="d-flex justify-content-end">
                 <div th:if="${question.modifyDate != null}" class="badge bg-light text-dark p-2 text-start mx-3">
                     <div class="mb-2">modified at</div>
@@ -72,7 +82,7 @@
     <!-- 답변 반복 시작 -->
     <div th:id="|answer_${answer.id}|" class="card my-3" th:each="answer : ${paging}">
         <div class="card-body">
-            <div class="card-text" th:utext="${@commonUtil.markdown(answer.content)}"></div>
+            <div class="card-text" th:utext="${@commonUtil.markdown(answer.content)}" style="white-space: pre-wrap;"></div>
             <div class="d-flex justify-content-end">
                 <div th:if="${answer.modifyDate != null}" class="badge bg-light text-dark p-2 text-start mx-3">
                     <div class="mb-2">modified at</div>
@@ -168,7 +178,25 @@
 
         window.onload = function () {
             checkQuestionRead(); // html 로드 시 바로 Ajax 요청
+            addClassInCode();
         };
+
+        // code 태그가 있다면 pre태그와 markdown-body 클래스 추가
+        function addClassInCode() {
+            const codeElements = document.querySelectorAll('code');
+
+            codeElements.forEach(codeElement => {
+                if (!codeElement.parentElement.classList.contains('markdown-body')) {
+                    const wrapper = document.createElement('div');
+                    wrapper.classList.add('markdown-body');
+
+                    const pre = document.createElement('pre');
+                    codeElement.parentElement.insertBefore(wrapper, codeElement);
+                    wrapper.appendChild(pre);
+                    pre.appendChild(codeElement);
+                }
+            });
+        }
 
         // 로컬스토리지에 해당 게시글 읽은적이 있는지 검사
         function checkIdInLocalStorage(id) {
