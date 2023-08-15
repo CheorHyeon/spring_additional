@@ -181,20 +181,24 @@
             addClassInCode();
         };
 
-        // code 태그가 있다면 pre태그와 markdown-body 클래스 추가
         function addClassInCode() {
+            // 코드 요소를 모두 선택합니다.
             const codeElements = document.querySelectorAll('code');
 
+            // 각 코드 요소마다 실행합니다.
             codeElements.forEach(codeElement => {
-                if (!codeElement.parentElement.classList.contains('markdown-body')) {
-                    const wrapper = document.createElement('div');
-                    wrapper.classList.add('markdown-body');
 
-                    const pre = document.createElement('pre');
-                    codeElement.parentElement.insertBefore(wrapper, codeElement);
-                    wrapper.appendChild(pre);
-                    pre.appendChild(codeElement);
+                // 코드 요소 바로 앞에 있는 요소가 이미 pre 태그인 경우, 추가 작업을 하지 않습니다.
+                const prevElement = codeElement.previousElementSibling;
+                if (prevElement && prevElement.tagName.toLowerCase() === 'pre') {
+                    return;
                 }
+
+                // pre 태그를 생성하고, 코드 요소를 해당 pre 태그의 자식 요소로 추가합니다.
+                const pre = document.createElement('pre');
+                const codeParent = codeElement.parentNode;
+                codeParent.replaceChild(pre, codeElement);
+                pre.appendChild(codeElement);
             });
         }
 
