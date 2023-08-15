@@ -6,6 +6,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -66,5 +68,6 @@ public class Answer {
 
 	@OneToMany(mappedBy = "answer", cascade = {CascadeType.REMOVE})
 	@ToString.Exclude
+	@LazyCollection(LazyCollectionOption.EXTRA) // commentList.size(); 함수가 실행될 때 SELECT COUNT 실행
 	private List<Comment> comments = new ArrayList<>();
 }

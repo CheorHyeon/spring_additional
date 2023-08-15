@@ -27,24 +27,24 @@
     <!-- 댓글 개수 갱신용 -->
     <div id="new_total_answer_comments" th:if="${totalCount !=null}" th:text="${totalCount}" style="display: none;"></div>
     <div th:if="${totalCount ==null}" th:text="${totalCount}"style="display: none;">0</div>
-    <ul>
-      <li class="nav-link d-flex flex-column gap-2" th:each="comment : ${answerCommentPaging}" th:if="${comment.parent == null}">
+
+      <div class="nav-link d-flex flex-column gap-2" th:each="comment : ${answerCommentPaging}" th:if="${comment.parent == null}">
         <div class="card-body bg-white rounded shadow-lg">
           <a th:id="|answer_comment_${comment.id}|"></a>
           <div class="d-flex align-items-baseline gap-2">
-            <p th:text="${comment.writer.username}" class="text-primary"></p>
+            <p th:text="${comment.writer.username}" class="text-primary" style="white-space: pre-wrap;"></p>
             <!-- 비밀댓글 표시 자물쇠-->
             <span class="badge text-bg-success" th:if="${comment.secret}">
               <i class="fa-solid fa-lock" style="color: #ffffff;"></i>
             </span>
           </div>
           <div class="d-flex justify-content-between">
-            <p th:text="${comment.content}" th:if="${!comment.deleted and !comment.secret}"></p>
+            <p th:text="${comment.content}" style="white-space: pre-wrap;"  th:if="${!comment.deleted and !comment.secret}"></p>
             <p class="text-body-tertiary" th:if="${comment.deleted}"> 삭제된 댓글입니다.</p>
             <!-- 비밀 댓글 분기 시작, 위 : 로그인 시 댓글 작성자 or 질문 작성자 or 관리자일 경우 확인 가능 / 아래 : 로그인 안하면 아에 안보이게-->
             <div sec:authorize="isAuthenticated()">
               <p class="text-lg font-bold" th:if="${comment.secret and ((comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}"
-              th:text="${comment.content}"></p>
+              th:text="${comment.content}" style="white-space: pre-wrap;" ></p>
               <p class="text-lg font-bold"
                  th:if="${comment.secret and !((comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}">
                 비밀 댓글입니다.</p>
@@ -133,8 +133,8 @@
         </div>
 
         <!-- 대댓글 출력-->
-        <ul class="ml-8 space-y-2">
-          <li th:each="childComment, childIndex : ${comment.children}">
+        <div class="ml-8 space-y-2">
+          <div th:each="childComment, childIndex : ${comment.children}">
             <div class="p-4">
               <a th:id="|answer_comment_${childComment.id}|"></a>
               <div class="d-flex align-items-baseline gap-2">
@@ -145,12 +145,12 @@
                 </span>
               </div>
               <div class="d-flex justify-content-between">
-                <p th:text="${childComment.content}" th:if="${!childComment.deleted and !childComment.secret}"></p>
+                <p th:text="${childComment.content}" style="white-space: pre-wrap;" th:if="${!childComment.deleted and !childComment.secret}"></p>
                 <p class="text-body-tertiary" th:if="${childComment.deleted}"> 삭제된 댓글입니다.</p>
                 <!-- 비밀 댓글 분기 시작, 위 : 로그인 시 대댓글 작성자 or 댓글 작성자 or 질문 작성자 or 관리자일 경우 확인 가능 / 아래 : 로그인 안하면 아에 안보이게-->
                 <div sec:authorize="isAuthenticated()">
                   <p class="text-lg font-bold" th:if="${childComment.secret and ((childComment.writer.username == #authentication.getPrincipal().getUsername()) or (comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}"
-                     th:text="${childComment.content}"></p>
+                     th:text="${childComment.content}" style="white-space: pre-wrap;" ></p>
                   <p class="text-lg font-bold"
                      th:if="${childComment.secret and !((childComment.writer.username == #authentication.getPrincipal().getUsername()) or (comment.writer.username == #authentication.getPrincipal().getUsername()) or (question.author.username == #authentication.getPrincipal().getUsername()) or (#authentication.principal.username eq 'admin'))}">
                     비밀 댓글입니다.</p>
@@ -218,10 +218,9 @@
                 </button>
               </div>
             </div>
-          </li>
-        </ul>
-      </li>
-    </ul>
+          </div>
+        </div>
+      </div>
     <!-- 댓글 페이징처리 시작 -->
     <div th:if="${!answerCommentPaging.isEmpty()}">
       <ul class="pagination justify-content-center">
@@ -632,19 +631,6 @@
           console.log("요청 실패", err);
         }
       });
-    }
-
-    function Answer_CommentForm__submit(form) {
-      // username 이(가) 올바른지 체크
-
-      form.commentContents.value = form.commentContents.value.trim(); // 입력란의 입력값에 있을지 모르는 좌우공백제거
-
-      if (form.commentContents.value.length === 0) {
-        alert('내용을 입력해주세요');
-        form.commentContents.focus();
-        return;
-      }
-      form.submit(); // 폼 발송
     }
   </script>
 

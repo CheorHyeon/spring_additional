@@ -1,5 +1,16 @@
 package com.ll.spring_additional.base.security;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.commonmark.Extension;
+import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
+import org.commonmark.ext.gfm.tables.TablesExtension;
+
+import org.commonmark.ext.task.list.items.TaskListItemsExtension;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -8,7 +19,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration // 스프링 환경설정 파일
 @EnableWebSecurity // 모든 요청 URL이 스프링 시큐리티의 제어를 받도록 -> 내부적으로 시큐리티 필터체인 동작
@@ -41,5 +51,29 @@ public class SecurityConfig {
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
+	}
+
+	// 마크다운 렌더링 렌더러 및 파서 빈 등록
+	@Bean
+	HtmlRenderer htmlRenderer(List<Extension> extensions) {
+		return HtmlRenderer.builder()
+			.extensions(extensions)
+			.build();
+	}
+
+	@Bean
+	Parser parser(List<Extension> extensions) {
+		return Parser.builder()
+			.extensions(extensions)
+			.build();
+	}
+
+	@Bean
+	List<Extension> markdownExtensions() {
+		return Arrays.asList(
+			TablesExtension.create(),
+			StrikethroughExtension.create(),
+			TaskListItemsExtension.create()
+		);
 	}
 }
