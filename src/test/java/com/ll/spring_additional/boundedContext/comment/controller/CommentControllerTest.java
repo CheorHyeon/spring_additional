@@ -89,7 +89,7 @@ public class CommentControllerTest {
 			.andExpect(handler().methodName("create"))
 			.andExpect(status().is2xxSuccessful())
 			.andExpect(content().string(containsString("""
-				 <p style="white-space: pre-wrap;">이거 질문에 댓글 달린다!</p>
+				<p style="white-space: pre-wrap;">이거 질문에 댓글 달린다!</p>
 				          """.stripIndent().trim())));
 
 		resultActions = mvc
@@ -108,7 +108,7 @@ public class CommentControllerTest {
 			.andExpect(handler().methodName("create"))
 			.andExpect(status().is2xxSuccessful())
 			.andExpect(content().string(containsString("""
-				이거 답변에 댓글 달린다!
+				<p style="white-space: pre-wrap;">이거 답변에 댓글 달린다!</p>
 				          """.stripIndent().trim())));
 	}
 

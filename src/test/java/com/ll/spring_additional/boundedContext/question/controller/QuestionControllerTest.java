@@ -295,8 +295,8 @@ public class QuestionControllerTest {
 			.andExpect(handler().methodName("questionModify"))
 			.andExpect(status().isOk())
 			.andExpect(content().string(containsString("""
-				    <div>내용은 필수항목입니다.</div>
-				                  """.stripIndent().trim())));
+				<div>내용은 필수항목입니다.</div>
+				              """.stripIndent().trim())));
 		// 제목 등록 x
 		resultActions = mvc
 			.perform(post("/question/modify/2")
@@ -311,8 +311,8 @@ public class QuestionControllerTest {
 			.andExpect(handler().methodName("questionModify"))
 			.andExpect(status().isOk())
 			.andExpect(content().string(containsString("""
-				    <div>제목은 필수항목입니다.</div>
-				                  """.stripIndent().trim())));
+				<div>제목은 필수항목입니다.</div>
+				              """.stripIndent().trim())));
 
 		// 둘다 등록 x
 		resultActions = mvc
@@ -327,11 +327,11 @@ public class QuestionControllerTest {
 			.andExpect(handler().methodName("questionModify"))
 			.andExpect(status().isOk())
 			.andExpect(content().string(containsString("""
-				    <div>제목은 필수항목입니다.</div>
-				                  """.stripIndent().trim())))
+				<div>제목은 필수항목입니다.</div>
+				              """.stripIndent().trim())))
 			.andExpect(content().string(containsString("""
-				    <div>내용은 필수항목입니다.</div>
-				                  """.stripIndent().trim())));
+				<div>내용은 필수항목입니다.</div>
+				              """.stripIndent().trim())));
 	}
 
 	@Test
@@ -431,7 +431,7 @@ public class QuestionControllerTest {
 		Integer size2 = question2.getVoters().size();
 
 		// 1차이가 나는지 비교(Set으로 관리되기에 중복 추천이 안됨)
-		assertThat(size2-1).isEqualTo(size);
+		assertThat(size2 - 1).isEqualTo(size);
 	}
 
 	@Test
@@ -458,7 +458,7 @@ public class QuestionControllerTest {
 				<p>(302)</p>
 				""".stripIndent().trim())))
 			.andExpect(content().string(containsString("""
-                <a href="/question/detail/298">테스트 데이터입니다:[298]</a>
+				            <a href="/question/detail/298">테스트 데이터입니다:[298]</a>
 				""".stripIndent().trim())));
 	}
 
@@ -503,7 +503,7 @@ public class QuestionControllerTest {
 				<p>(2)</p>
 				""".stripIndent().trim())))
 			.andExpect(content().string(containsString("""
-                <a href="/question/detail/302">질문입니닷22</a>
+				            <a href="/question/detail/302">질문입니닷22</a>
 				""".stripIndent().trim())));
 	}
 
