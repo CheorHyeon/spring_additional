@@ -1,6 +1,9 @@
 <html layout:decorate="~{common/layout}">
 <main layout:fragment="content" class="container">
-    <h5 class="my-3 border-bottom pb-2">답변 수정</h5>
+    <h5 class="my-3 border-bottom pb-2"
+        th:if="${create != null} ">답변 등록</h5>
+    <h5 class="my-3 border-bottom pb-2"
+        th:if="${create == null}">답변 수정</h5>
     <form th:object="${answerForm}" th:action method="post">
         <div th:replace="~{common/form_errors :: formErrorsFragment}"></div>
         <div class="mb-3">

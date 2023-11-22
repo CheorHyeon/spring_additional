@@ -42,8 +42,8 @@ public class AnswerController {
 		Question question = questionService.getQuestion(id);
 		SiteUser siteUser = userService.getUser(principal.getName());
 		if (bindingResult.hasErrors()) {
-			model.addAttribute("question", question);
-			return "question/question_detail";
+			model.addAttribute("create", true);
+			return "answer/answer_form";
 		}
 		Answer answer = answerService.create(question, answerForm.getContent(), siteUser);
 		return String.format("redirect:/question/detail/%s#answer_%s",
