@@ -69,6 +69,3 @@
 
 ## 프로젝트 결과물
 - [벨로그 기능별 정리](https://velog.io/@puar12?tag=%EC%A0%90%ED%94%84%ED%88%AC%EC%8A%A4%ED%94%84%EB%A7%81%EB%B6%80%ED%8A%B8)
-- [배포 사이트(예정)]()
-
-<!-- 템플릿 출처 : https://github.com/othneildrew/Best-README-Template -->
