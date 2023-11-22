@@ -123,6 +123,47 @@ public class NotProd {
 					.build();
 				commentRepository.save(comment4);
 
+				Comment comment5 = Comment.builder()
+					.content("(질문)부모 삭제된 테스트용 부모 데이터, 자식 삭제시 이녀석도 사라짐")
+					.writer(user2)
+					.question(question1)
+					.deleted(true)
+					.build();
+
+				Comment comment6 = Comment.builder()
+					.content("(질문)부모 삭제된 테스트용 자식 데이터, 이녀석 삭제시 부모도 사라짐")
+					.writer(user2)
+					.question(question1)
+					.parent(comment5)
+					.build();
+
+				commentRepository.save(comment5);
+				commentRepository.save(comment6);
+
+				Comment comment7 = Comment.builder()
+					.content("(응답)부모 삭제된 테스트용 부모 데이터, 자식 삭제시 이녀석도 사라짐")
+					.writer(user2)
+					.answer(answer1)
+					.deleted(true)
+					.build();
+
+				Comment comment8 = Comment.builder()
+					.content("(응답)부모 삭제된 테스트용 자식 데이터, 이녀석 삭제시 부모도 사라짐")
+					.writer(user2)
+					.answer(answer1)
+					.parent(comment7)
+					.build();
+
+				Comment comment9 = Comment.builder()
+					.content("대댓글 없는 댓글")
+					.writer(user2)
+					.answer(answer1)
+					.build();
+
+				commentRepository.save(comment7);
+				commentRepository.save(comment8);
+				commentRepository.save(comment9);
+
 				}
 			};
 	}
