@@ -111,7 +111,7 @@ public class UserController {
 
 	@PreAuthorize("isAnonymous()")
 	@PostMapping("/pw_find")
-	public String findPassWord(Model model, @Valid UserPWFindForm userPWFindForm, BindingResult bindingResult,
+	public String findPassWord(@Valid UserPWFindForm userPWFindForm, BindingResult bindingResult,
 		RedirectAttributes redirectAttributes) {
 		if (bindingResult.hasErrors()) {
 			return "user/pw_find";
@@ -132,7 +132,6 @@ public class UserController {
 		String tempPW = userService.setTemporaryPW(user);
 
 		// 이메일 전송
-		// @Async 붙은 메서드는 동일한 클래스에서 호출할 수 없기에 컨트롤러에서 메일 발송 요청
 		userService.sendEmail(userPWFindForm.getEmail(), user.getUsername(), tempPW);
 
 		// 로그인 페이지에서 보여줄 성공 메시지를 플래시 애트리뷰트로 추가
@@ -149,7 +148,8 @@ public class UserController {
 
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/change/passwd")
-	public String changePW(@Valid @ModelAttribute("pwChangeForm") PWChangeForm pwChangeForm, BindingResult bindingResult, Model model,
+	public String changePW(@Valid @ModelAttribute("pwChangeForm") PWChangeForm pwChangeForm,
+		BindingResult bindingResult, Model model,
 		Principal principal, RedirectAttributes redirectAttributes) {
 		if (bindingResult.hasErrors()) {
 			return "user/pw_change";

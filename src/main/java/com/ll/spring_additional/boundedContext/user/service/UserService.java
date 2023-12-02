@@ -1,9 +1,7 @@
 package com.ll.spring_additional.boundedContext.user.service;
 
-import java.awt.datatransfer.Clipboard;
 import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.Executor;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -11,9 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
-import com.ll.spring_additional.base.exception.DataNotFoundException;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 import com.ll.spring_additional.boundedContext.user.repository.UserRepository;
 
@@ -30,7 +26,7 @@ public class UserService {
 
 	private final JavaMailSender mailSender;
 
-	private static final String ADMIN_ADDRESS = "r4560798@naver.com";
+	private String ADMIN_ADDRESS = "r4560798@naver.com";
 
 	// private final Executor executor;
 
@@ -40,12 +36,12 @@ public class UserService {
 	}
 
 	private SiteUser join(String providerTypeCode, String username, String email, String password) {
-		if (getUser(username) !=null) {
+		if (getUser(username) != null) {
 			throw new RuntimeException("해당 ID는 이미 사용중입니다.");
 		}
 
 		// 소셜 로그인의 경우 아이디가 게시판에 노출되므로, 비번 없는 공백 알고 혹시 모를 공격 방어
-		if(!providerTypeCode.equals("SBB")) {
+		if (!providerTypeCode.equals("SBB")) {
 			password = createRandomPassword();
 		}
 
@@ -76,13 +72,17 @@ public class UserService {
 		return temporaryPassword;
 	}
 
-	@Async // 비동기
+	@Async("taskExecutor1")
 	public void sendEmail(String email, String userName, String tempPW) {
+		// 테스트를 위해 @test.com인 이메일은 발송하지 않음
+		if (email.endsWith("@test.com"))
+			return;
+
 		SimpleMailMessage message = new SimpleMailMessage();
 		message.setTo(email);
 		message.setFrom(ADMIN_ADDRESS);
-		message.setSubject(userName+"님의 임시비밀번호 안내 메일입니다.");
-		message.setText("안녕하세요 "+userName+"님의 임시 비밀번호는 [" + tempPW +"] 입니다.");
+		message.setSubject(userName + "님의 임시비밀번호 안내 메일입니다.");
+		message.setText("안녕하세요 " + userName + "님의 임시 비밀번호는 [" + tempPW + "] 입니다.");
 
 		mailSender.send(message);
 
@@ -112,8 +112,10 @@ public class UserService {
 	public SiteUser whenSocialLogin(String providerTypeCode, String username) {
 		SiteUser siteUser = getUser(username);
 
-		if (siteUser != null) return siteUser;
+		if (siteUser != null)
+			return siteUser;
 
 		return join(providerTypeCode, username, "", "");
 	}
+
 }
