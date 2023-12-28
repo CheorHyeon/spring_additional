@@ -1,11 +1,5 @@
 package com.ll.spring_additional.boundedContext.comment.form;
 
-import java.time.LocalDateTime;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

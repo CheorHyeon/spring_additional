@@ -1,18 +1,13 @@
 package com.ll.spring_additional.boundedContext.user.service;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.ll.spring_additional.boundedContext.user.userRole.UserRole;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 import com.ll.spring_additional.boundedContext.user.repository.UserRepository;
 

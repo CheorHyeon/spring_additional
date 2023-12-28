@@ -1,13 +1,11 @@
 package com.ll.spring_additional.base.security;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.commonmark.Extension;
 import org.commonmark.ext.gfm.strikethrough.StrikethroughExtension;
 import org.commonmark.ext.gfm.tables.TablesExtension;
-
 import org.commonmark.ext.task.list.items.TaskListItemsExtension;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;

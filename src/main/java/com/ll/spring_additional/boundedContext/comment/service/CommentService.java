@@ -1,5 +1,7 @@
 package com.ll.spring_additional.boundedContext.comment.service;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -12,9 +14,6 @@ import com.ll.spring_additional.boundedContext.comment.repository.CommentReposit
 import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 import lombok.RequiredArgsConstructor;
 
 @Service

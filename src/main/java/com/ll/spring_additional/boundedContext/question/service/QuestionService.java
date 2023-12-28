@@ -13,9 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ll.spring_additional.base.exception.DataNotFoundException;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
-import com.ll.spring_additional.boundedContext.question.questionEnum.QuestionEnum;
-import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 import com.ll.spring_additional.boundedContext.question.repository.QuestionRepository;
+import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 
 import lombok.RequiredArgsConstructor;
 
