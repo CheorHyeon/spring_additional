@@ -63,6 +63,7 @@ public class Answer {
 	private SiteUser author;
 
 	@ManyToMany
+	@LazyCollection(LazyCollectionOption.EXTRA)
 	private Set<SiteUser> voters = new LinkedHashSet<>();
 
 	@OneToMany(mappedBy = "answer", cascade = {CascadeType.REMOVE})

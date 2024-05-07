@@ -68,6 +68,7 @@ public class Question {
 	private SiteUser author;
 
 	@ManyToMany
+	@LazyCollection(LazyCollectionOption.EXTRA)
 	private Set<SiteUser> voters = new LinkedHashSet<>();
 
 	private int view = 0;
