@@ -1,5 +1,6 @@
 package com.ll.spring_additional.boundedContext.user.controller;
 
+import java.net.http.HttpRequest;
 import java.security.Principal;
 import java.util.List;
 
@@ -26,6 +27,8 @@ import com.ll.spring_additional.boundedContext.user.Form.UserPWFindForm;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 import com.ll.spring_additional.boundedContext.user.service.UserService;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -52,7 +55,7 @@ public class UserController {
 	}
 
 	@PostMapping("/signup")
-	public String signup(@Valid UserCreateForm userCreateForm, BindingResult bindingResult) {
+	public String signup(@Valid UserCreateForm userCreateForm, BindingResult bindingResult, HttpServletRequest req) {
 		if (bindingResult.hasErrors()) {
 			return "user/signup_form";
 		}
@@ -75,6 +78,14 @@ public class UserController {
 			bindingResult.reject("signupFailed", e.getMessage());
 			return "user/signup_form";
 		}
+
+		// 가입 후 자동로그인 처리
+		try {
+			req.login(userCreateForm.getUsername(), userCreateForm.getPassword1());
+		} catch (ServletException e) {
+			throw new RuntimeException(e);
+		}
+
 		return "redirect:/";
 	}
 
