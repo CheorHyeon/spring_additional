@@ -19,8 +19,6 @@ public class CommonUtil {
 		Node document = parser.parse(markdown);
 		String html = renderer.render(document);
 
-		System.out.println("Converted HTML: " + html);
-
 		// Sanitize HTML
 		PolicyFactory policy = new HtmlPolicyBuilder()
 			.allowElements("h1", "h2", "h3", "p", "b", "i", "em", "strong", "img", "a", "ul", "ol", "li", "table", "thead", "tbody", "tr", "th", "td", "del", "blockquote", "code", "pre", "input", "hr")
@@ -33,7 +31,6 @@ public class CommonUtil {
 			.toFactory();
 
 		String safeHtml = policy.sanitize(html);
-		System.out.println("After sanitize: " + safeHtml);
 		return safeHtml; // Return the sanitized HTML
 	}
 }
