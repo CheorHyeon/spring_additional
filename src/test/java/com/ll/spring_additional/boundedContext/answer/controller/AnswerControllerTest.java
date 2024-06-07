@@ -120,7 +120,7 @@ public class AnswerControllerTest {
 	@WithUserDetails("user1")
 	@DisplayName("POST /answer/modify/{id} 는 답변을 수정한다.")
 	void t005() throws Exception {
-		Answer beforeAnswer = answerService.getAnswer(1);
+		Answer beforeAnswer = answerService.getAnswer(1L);
 		String beforeContent = beforeAnswer.getContent();
 
 		// WHEN
@@ -137,7 +137,7 @@ public class AnswerControllerTest {
 			.andExpect(status().is3xxRedirection())
 			.andExpect(redirectedUrlPattern("/question/detail/*"));
 
-		Answer afterAnswer = answerService.getAnswer(1);
+		Answer afterAnswer = answerService.getAnswer(1L);
 		String afterContent = afterAnswer.getContent();
 
 		assertThat(afterContent).isEqualTo("이건 수정이여"); // 수정 됐는지 확인
@@ -227,7 +227,7 @@ public class AnswerControllerTest {
 	@DisplayName("GET /answer/vote/{id} 는 답변을 추천할 수 있다. Set으로 관리되기에 중복 추천이 안됨")
 	void t010() throws Exception {
 		// 추천하기 전 추천 수
-		Answer beforeAnswer = answerService.getAnswer(1);
+		Answer beforeAnswer = answerService.getAnswer(1L);
 		Integer beforeSize = beforeAnswer.getVoters().size();
 
 		// 추천하기
@@ -255,7 +255,7 @@ public class AnswerControllerTest {
 			.andExpect(redirectedUrlPattern("/question/detail/*")); // 답변 있는 질문으로 리다이렉트
 
 		// 추천 후 추천인 수
-		Answer afterAnswer = answerService.getAnswer(1);
+		Answer afterAnswer = answerService.getAnswer(1L);
 		Integer afterSize = afterAnswer.getVoters().size();
 
 		// 1차이가 나는지 비교(Set으로 관리되기에 중복 추천이 안됨)

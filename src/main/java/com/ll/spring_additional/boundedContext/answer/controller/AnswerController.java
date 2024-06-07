@@ -37,7 +37,7 @@ public class AnswerController {
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/create/{id}")
 	// Principal.getName : 로그인한 사용자의 username(Id)를 가져옴
-	public String createAnswer(Model model, @PathVariable("id") Integer id,
+	public String createAnswer(Model model, @PathVariable("id") Long id,
 		@Valid AnswerForm answerForm, BindingResult bindingResult, Principal principal) {
 		Question question = questionService.getQuestion(id);
 		SiteUser siteUser = userService.getUser(principal.getName());
@@ -52,7 +52,7 @@ public class AnswerController {
 
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/modify/{id}")
-	public String answerModify(AnswerForm answerForm, @PathVariable("id") Integer id, Principal principal) {
+	public String answerModify(AnswerForm answerForm, @PathVariable("id") Long id, Principal principal) {
 		Answer answer = answerService.getAnswer(id);
 		if (!answer.getAuthor().getUsername().equals(principal.getName())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
@@ -64,7 +64,7 @@ public class AnswerController {
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/modify/{id}")
 	public String answerModify(@Valid AnswerForm answerForm, BindingResult bindingResult,
-		@PathVariable("id") Integer id, Principal principal) {
+		@PathVariable("id") Long id, Principal principal) {
 		if (bindingResult.hasErrors()) {
 			return "answer/answer_form";
 		}
@@ -79,7 +79,7 @@ public class AnswerController {
 
 	@PreAuthorize("isAuthenticated()")
 	@DeleteMapping("/{id}")
-	public String answerDelete(Principal principal, @PathVariable("id") Integer id) {
+	public String answerDelete(Principal principal, @PathVariable("id") Long id) {
 		Answer answer = answerService.getAnswer(id);
 		if (!answer.getAuthor().getUsername().equals(principal.getName())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
@@ -90,7 +90,7 @@ public class AnswerController {
 
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/vote/{id}")
-	public String answerVote(Principal principal, @PathVariable("id") Integer id) {
+	public String answerVote(Principal principal, @PathVariable("id") Long id) {
 		Answer answer = answerService.getAnswer(id);
 		SiteUser siteUser = userService.getUser(principal.getName());
 		answerService.vote(answer, siteUser);

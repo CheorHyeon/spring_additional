@@ -402,7 +402,7 @@ public class QuestionControllerTest {
 	void t012() throws Exception {
 
 		// 추천하기 전 추천 수
-		Question question = questionService.getQuestion(302);
+		Question question = questionService.getQuestion(302L);
 		Integer size = question.getVoters().size();
 
 		// 추천하기
@@ -429,7 +429,7 @@ public class QuestionControllerTest {
 			.andExpect(redirectedUrl("/question/detail/302"));
 
 		// 추천 후 추천인 수
-		Question question2 = questionService.getQuestion(302);
+		Question question2 = questionService.getQuestion(302L);
 		Integer size2 = question2.getVoters().size();
 
 		// 1차이가 나는지 비교(Set으로 관리되기에 중복 추천이 안됨)

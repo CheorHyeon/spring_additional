@@ -101,7 +101,7 @@ public class QuestionController {
 	}
 
 	@GetMapping("/detail/{id}")
-	public String detail(Model model, @PathVariable Integer id, AnswerForm answerForm,
+	public String detail(Model model, @PathVariable Long id, AnswerForm answerForm,
 		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "") String sort) {
 		Question question = questionService.getQuestion(id);
 		model.addAttribute("question", question);
@@ -114,7 +114,7 @@ public class QuestionController {
 
 	@GetMapping("/increase")
 	@ResponseBody
-	public String increaseHit(Integer questionId, @RequestParam(required = false) Boolean isVisited) {
+	public String increaseHit(Long questionId, @RequestParam(required = false) Boolean isVisited) {
 		Question question = questionService.getQuestion(questionId);
 
 		// 방문한 적이 없을때만 조회수 증가
@@ -160,7 +160,7 @@ public class QuestionController {
 
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/modify/{id}")
-	public String questionModify(QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal,
+	public String questionModify(QuestionForm questionForm, @PathVariable("id") Long id, Principal principal,
 		Model model) {
 		Question question = questionService.getQuestion(id);
 		if (!question.getAuthor().getUsername().equals(principal.getName())) {
@@ -182,7 +182,7 @@ public class QuestionController {
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/modify/{id}")
 	public String questionModify(@Valid QuestionForm questionForm, BindingResult bindingResult,
-		Principal principal, @PathVariable("id") Integer id) {
+		Principal principal, @PathVariable("id") Long id) {
 		if (bindingResult.hasErrors()) {
 			return "question/question_form";
 		}
@@ -196,7 +196,7 @@ public class QuestionController {
 
 	@PreAuthorize("isAuthenticated()")
 	@DeleteMapping("/{id}")
-	public String questionDelete(Principal principal, @PathVariable Integer id) {
+	public String questionDelete(Principal principal, @PathVariable Long id) {
 		Question question = questionService.getQuestion(id);
 		if (!question.getAuthor().getUsername().equals(principal.getName())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "삭제권한이 없습니다.");
@@ -207,7 +207,7 @@ public class QuestionController {
 
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/vote/{id}")
-	public String questionVote(Principal principal, @PathVariable("id") Integer id) {
+	public String questionVote(Principal principal, @PathVariable("id") Long id) {
 		Question question = questionService.getQuestion(id);
 		SiteUser siteUser = userService.getUser(principal.getName());
 		questionService.vote(question, siteUser);

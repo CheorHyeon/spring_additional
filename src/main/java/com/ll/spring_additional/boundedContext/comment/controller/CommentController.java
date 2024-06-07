@@ -40,7 +40,7 @@ public class CommentController {
 
 	@GetMapping("/{type}/{id}")
 	public String showComments(Model model, @ModelAttribute CommentForm commentForm,
-		@RequestParam(defaultValue = "0") Integer commentPage, @PathVariable String type, @PathVariable Integer id, @RequestParam(required = false) Integer questionId) {
+		@RequestParam(defaultValue = "0") Integer commentPage, @PathVariable String type, @PathVariable Long id, @RequestParam(required = false) Long questionId) {
 
 		Question question;
 		if (type.equals("question")) {

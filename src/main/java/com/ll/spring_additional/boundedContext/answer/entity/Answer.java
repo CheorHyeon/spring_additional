@@ -2,7 +2,7 @@ package com.ll.spring_additional.boundedContext.answer.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -12,6 +12,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.ll.spring_additional.boundedContext.answerVoter.AnswerVoter;
 import com.ll.spring_additional.boundedContext.comment.entity.Comment;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
@@ -20,10 +21,10 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
@@ -39,7 +40,7 @@ import lombok.ToString;
 public class Answer {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private Long id;
 
 	@Column(columnDefinition = "TEXT")
 	private String content;
@@ -62,9 +63,9 @@ public class Answer {
 	@ManyToOne
 	private SiteUser author;
 
-	@ManyToMany
+	@OneToMany(fetch = FetchType.LAZY)
 	@LazyCollection(LazyCollectionOption.EXTRA)
-	private Set<SiteUser> voters = new LinkedHashSet<>();
+	private Set<AnswerVoter> voters = new HashSet<>();
 
 	@OneToMany(mappedBy = "answer", cascade = {CascadeType.REMOVE})
 	@ToString.Exclude

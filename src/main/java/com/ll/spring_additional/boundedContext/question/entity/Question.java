@@ -2,6 +2,7 @@ package com.ll.spring_additional.boundedContext.question.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,6 +16,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.ll.spring_additional.boundedContext.answer.entity.Answer;
 import com.ll.spring_additional.boundedContext.comment.entity.Comment;
 import com.ll.spring_additional.boundedContext.question.questionEnum.QuestionEnum;
+import com.ll.spring_additional.boundedContext.questionVoter.QuestionVoter;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 
 import jakarta.persistence.CascadeType;
@@ -40,7 +42,7 @@ import lombok.ToString;
 public class Question {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private Long id;
 
 	@Column(length = 200)
 	private String subject;
@@ -67,9 +69,9 @@ public class Question {
 	@ManyToOne
 	private SiteUser author;
 
-	@ManyToMany
+	@OneToMany
 	@LazyCollection(LazyCollectionOption.EXTRA)
-	private Set<SiteUser> voters = new LinkedHashSet<>();
+	private Set<QuestionVoter> voters = new HashSet<>();
 
 	private int view = 0;
 
