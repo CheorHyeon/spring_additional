@@ -1,6 +1,7 @@
 package com.ll.spring_additional.boundedContext.question.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -69,4 +70,5 @@ public interface QuestionRepository extends JpaRepository<Question, Integer> {
 		+ "   )")
 	Page<Question> findAllByKeywordAndAnswer_AuthorId(@Param("kw") String kw, @Param("authorId") Long authorId, Pageable pageable);
 
+	Optional<Question> findById(Long id);
 }

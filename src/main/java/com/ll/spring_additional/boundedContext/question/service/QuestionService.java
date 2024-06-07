@@ -12,8 +12,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ll.spring_additional.base.exception.DataNotFoundException;
+import com.ll.spring_additional.boundedContext.answerVoter.AnswerVoter;
 import com.ll.spring_additional.boundedContext.question.entity.Question;
 import com.ll.spring_additional.boundedContext.question.repository.QuestionRepository;
+import com.ll.spring_additional.boundedContext.questionVoter.QuestionVoter;
+import com.ll.spring_additional.boundedContext.questionVoter.QuestionVoterRepository;
 import com.ll.spring_additional.boundedContext.user.entity.SiteUser;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 public class QuestionService {
 	private final QuestionRepository questionRepository;
 
+	private final QuestionVoterRepository questionVoterRepository;
+
 	public Page<Question> getList(int category, int page, String kw) {
 		List<Sort.Order> sorts = new ArrayList<>();
 		sorts.add(Sort.Order.desc("createDate"));
@@ -31,7 +36,7 @@ public class QuestionService {
 		return questionRepository.findAllByKeywordAndType(kw, category, pageable);
 	}
 
-	public Question getQuestion(Integer id) {
+	public Question getQuestion(Long id) {
 		Optional<Question> question = questionRepository.findById(id);
 		if (question.isPresent()) {
 			return question.get();
@@ -72,8 +77,24 @@ public class QuestionService {
 
 	@Transactional
 	public void vote(Question question, SiteUser siteUser) {
-		question.getVoters().add(siteUser);
-		questionRepository.save(question);
+		QuestionVoter questionVoter = questionVoterRepository.findByQuestionAndVoter(question, siteUser);
+
+		// 이미 추천했다면 삭제
+		if(questionVoter != null) {
+			// answer에 Set 갱신
+			question.getVoters().remove(questionVoter);
+			// 연관관계 주인도 업데이트
+			questionVoterRepository.delete(questionVoter);
+			return;
+		}
+
+		// 추천 안했다면 새로 추천 처리
+		QuestionVoter newQuestionVoter = new QuestionVoter();
+		newQuestionVoter.setQuestion(question);
+		newQuestionVoter.setVoter(siteUser);
+		// 연관관계 주인 및 Set 저장
+		QuestionVoter saveQuestionVoter = questionVoterRepository.save(newQuestionVoter);
+		question.getVoters().add(saveQuestionVoter);
 	}
 
 	public Long getQuestionCount(SiteUser author) {
