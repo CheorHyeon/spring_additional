@@ -32,11 +32,26 @@
                 </div>
             </div>
             <div class="my-3">
-                <a onclick="return confirm('추천하시겠습니까?');" class="btn btn-sm btn-outline-secondary"
-                   th:href="@{|/question/vote/${question.id}|}">
-                    추천
+                <!-- 로그인 하지 않은 경우 기존꺼 그대로 노출-->
+                <a sec:authorize="isAnonymous()" class="btn btn-sm btn-outline-secondary" th:href="@{/user/login}">
+                    추천(로그인필요)
                     <span class="badge rounded-pill bg-success" th:text="${#sets.size(question.voters)}"></span>
                 </a>
+
+                <!-- 로그인한 경우 -->
+                <form sec:authorize="isAuthenticated()" th:if="${hasQuestionVoted}" th:action="@{|/question/vote/${question.id}|}" method="post">
+                    <button type="submit" onclick="return confirm('추천을 취소하시겠습니까?');" class="btn btn-sm active btn-outline-secondary">
+                        추천
+                        <span class="badge rounded-pill bg-success" th:text="${#sets.size(question.voters)}"></span>
+                    </button>
+                </form>
+                <form sec:authorize="isAuthenticated()" th:if="${!hasQuestionVoted}" th:action="@{|/question/vote/${question.id}|}" method="post">
+                    <button type="submit" onclick="return confirm('추천하시겠습니까?');" class="recommend btn btn-sm btn-outline-secondary">
+                        추천
+                        <span class="badge rounded-pill bg-success" th:text="${#sets.size(question.voters)}"></span>
+                    </button>
+                </form>
+
                 <a th:href="@{|/question/modify/${question.id}|}" class="btn btn-sm btn-outline-secondary"
                    sec:authorize="isAuthenticated()"
                    th:if="${question.author != null and #authentication.getPrincipal().getUsername() == question.author.username}"
@@ -80,7 +95,7 @@
         </div>
     </div>
     <!-- 답변 반복 시작 -->
-    <div th:id="|answer_${answer.id}|" class="card my-3" th:each="answer : ${paging}">
+    <div th:id="|answer_${answer.id}|" class="card my-3" th:each="answer, stat : ${paging}">
         <div class="card-body">
             <div class="card-text" th:utext="${@commonUtil.markdown(answer.content)}" style="white-space: pre-wrap;"></div>
             <div class="d-flex justify-content-end">
@@ -96,11 +111,26 @@
                 </div>
             </div>
             <div class="my-3">
-                <a onclick="return confirm('추천하시겠습니까?');" class="recommend btn btn-sm btn-outline-secondary"
-                   th:href="@{|/answer/vote/${answer.id}|}">
-                    추천
+                <!-- 로그인한 경우 -->
+                <form sec:authorize="isAuthenticated()" th:if="${hasAnsweredVoted[stat.index]}" th:action="@{|/answer/vote/${answer.id}|}" method="post">
+                    <button type="submit" onclick="return confirm('추천을 취소하시겠습니까?');" class="btn btn-sm active btn-outline-secondary">
+                        추천
+                        <span class="badge rounded-pill bg-success" th:text="${#sets.size(answer.voters)}"></span>
+                    </button>
+                </form>
+                <form sec:authorize="isAuthenticated()" th:if="${!hasAnsweredVoted[stat.index]}" th:action="@{|/answer/vote/${answer.id}|}" method="post">
+                    <button type="submit" onclick="return confirm('추천하시겠습니까?');" class="recommend btn btn-sm btn-outline-secondary">
+                        추천
+                        <span class="badge rounded-pill bg-success" th:text="${#sets.size(answer.voters)}"></span>
+                    </button>
+                </form>
+
+                <!-- 로그인 하지 않은 경우 기존꺼 그대로 노출-->
+                <a sec:authorize="isAnonymous()" class="btn btn-sm btn-outline-secondary" th:href="@{/user/login}">
+                    추천(로그인필요)
                     <span class="badge rounded-pill bg-success" th:text="${#sets.size(answer.voters)}"></span>
                 </a>
+
                 <a th:href="@{|/answer/modify/${answer.id}|}" class="btn btn-sm btn-outline-secondary"
                    sec:authorize="isAuthenticated()"
                    th:if="${answer.author != null and #authentication.getPrincipal().getUsername() == answer.author.username}"

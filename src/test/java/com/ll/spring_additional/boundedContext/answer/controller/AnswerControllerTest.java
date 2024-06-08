@@ -224,27 +224,16 @@ public class AnswerControllerTest {
 
 	@Test
 	@WithUserDetails("user2")
-	@DisplayName("GET /answer/vote/{id} 는 답변을 추천할 수 있다. Set으로 관리되기에 중복 추천이 안됨")
+	@DisplayName("POST /answer/vote/{id} 는 답변을 추천할 수 있다.")
 	void t010() throws Exception {
 		// 추천하기 전 추천 수
-		Answer beforeAnswer = answerService.getAnswer(1L);
-		Integer beforeSize = beforeAnswer.getVoters().size();
+		Answer answer = answerService.getAnswer(1L);
+		Integer beforeVoteSize = answer.getVoters().size();
 
 		// 추천하기
 		ResultActions resultActions = mvc
-			.perform(get("/answer/vote/1"))
-			.andDo(print());
-
-		// THEN
-		resultActions
-			.andExpect(handler().handlerType(AnswerController.class))
-			.andExpect(handler().methodName("answerVote"))
-			.andExpect(status().is3xxRedirection())
-			.andExpect(redirectedUrlPattern("/question/detail/*")); // 답변 있는 질문으로 리다이렉트
-
-		// 중복 추천
-		resultActions = mvc
-			.perform(get("/answer/vote/1"))
+			.perform(post("/answer/vote/1")
+				.with(csrf()))// CSRF 키 생성
 			.andDo(print());
 
 		// THEN
@@ -255,11 +244,10 @@ public class AnswerControllerTest {
 			.andExpect(redirectedUrlPattern("/question/detail/*")); // 답변 있는 질문으로 리다이렉트
 
 		// 추천 후 추천인 수
-		Answer afterAnswer = answerService.getAnswer(1L);
-		Integer afterSize = afterAnswer.getVoters().size();
+		Integer afterVoteSize = answer.getVoters().size();
 
 		// 1차이가 나는지 비교(Set으로 관리되기에 중복 추천이 안됨)
-		assertThat(afterSize - 1).isEqualTo(beforeSize);
+		assertThat(beforeVoteSize + 1).isEqualTo(afterVoteSize);
 	}
 
 	@Test

@@ -1,6 +1,9 @@
 package com.ll.spring_additional.boundedContext.question.controller;
 
 import java.security.Principal;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -102,12 +105,31 @@ public class QuestionController {
 
 	@GetMapping("/detail/{id}")
 	public String detail(Model model, @PathVariable Long id, AnswerForm answerForm,
-		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "") String sort) {
+		@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "") String sort, Principal principal) {
 		Question question = questionService.getQuestion(id);
 		model.addAttribute("question", question);
 
 		Page<Answer> paging = answerService.getAnswerPage(question, page, sort);
 		model.addAttribute("paging", paging);
+
+		// 사용자가 로그인 했다면
+		if (principal != null && principal.getName() != null) {
+			// 질문에 대한 추천 여부 확인
+			SiteUser currentUser = userService.getUser(principal.getName());
+			boolean hasQuestionVoted = question.getVoters().stream()
+				.anyMatch(v -> v.getVoter().equals(currentUser));
+			model.addAttribute("hasQuestionVoted", hasQuestionVoted);
+
+			// 답변에 대한 추천 여부 확인
+			List<Boolean> hasAnsweredVoted = paging.getContent().stream()
+				.map(answer -> answer.getVoters().stream()
+					.anyMatch(v -> v.getVoter().equals(currentUser)))
+				.collect(Collectors.toList());
+					model.addAttribute("hasAnsweredVoted", hasAnsweredVoted);
+		} else {
+			model.addAttribute("hasQuestionVoted", false);
+			model.addAttribute("hasAnsweredVoted", Collections.emptyList());
+		}
 
 		return "question/question_detail";
 	}
@@ -206,7 +228,7 @@ public class QuestionController {
 	}
 
 	@PreAuthorize("isAuthenticated()")
-	@GetMapping("/vote/{id}")
+	@PostMapping("/vote/{id}")
 	public String questionVote(Principal principal, @PathVariable("id") Long id) {
 		Question question = questionService.getQuestion(id);
 		SiteUser siteUser = userService.getUser(principal.getName());
