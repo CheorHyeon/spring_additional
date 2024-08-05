@@ -31,12 +31,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 @Getter
 @Setter
 @Entity
+@NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class) // + enableJpaAuditing => JPA Auditing 활성
 // JPA Auditing : 시간에 대해 자동으로 값을 넣어주는 기능
 public class Question {
