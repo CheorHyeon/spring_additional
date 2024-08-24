@@ -102,7 +102,7 @@ public class NotProd {
 					.content("테스트 대댓글")
 					.writer(user2)
 					.question(question2)
-					.parent(commentRepository.findById(1L).get())
+					.parent(commentList.get(0))
 					.build();
 
 				commentRepository.save(comment1);
